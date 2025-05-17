@@ -126,7 +126,8 @@ const RequestList = ({
       minWidth: 150,
       sortable: false,
       renderCell: (params: GridRenderCellParams<Request>) => {
-        const showApprovalButtons = canApprove(params.row)
+        const isApprovalView = window.location.pathname.includes('/requests/approvals')
+        const showApprovalButtons = isApprovalView && canApprove(params.row)
         
         return (
           <Box>

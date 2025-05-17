@@ -19,26 +19,8 @@ export type ACLObj = {
 const defineRulesFor = (role: string, subject: string) => {
   const { can, rules } = new AbilityBuilder(AppAbility)
 
-  // Allow all roles to access home page
-  can('read', 'home-page')
-
-  if (role === 'Super Admin') {
-    can('manage', 'all')
-    can('manage', 'users')
-    can('manage', 'roles')
-  } else if (role === 'admin') {
-    can('manage', 'all')
-  } else if (role === 'client') {
-    can(['read'], 'acl-page')
-  } else if (role === 'author') {
-    can(['read', 'create', 'update'], subject)
-  } else if (role === 'editor') {
-    can(['read', 'update'], subject)
-  } else if (role === 'maintainer') {
-    can(['read', 'update'], subject)
-  } else if (role === 'subscriber') {
-    can('read', subject)
-  }
+  // Allow all roles to access everything
+  can('manage', 'all')
 
   return rules
 }

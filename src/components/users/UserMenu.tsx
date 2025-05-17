@@ -22,7 +22,7 @@ interface UserMenuProps {
 const UserMenu = ({ user, onUpdate }: UserMenuProps) => {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
-    fullName: user.fullName || '',
+    fullname: user.fullname || '',
     email: user.email || '',
     directSuperior: user.directSuperior || ''
   })
@@ -54,8 +54,8 @@ const UserMenu = ({ user, onUpdate }: UserMenuProps) => {
             <TextField
               fullWidth
               label="Full Name"
-              value={formData.fullName}
-              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+              value={formData.fullname}
+              onChange={(e) => setFormData({ ...formData, fullname: e.target.value })}
               disabled={loading}
             />
           </Grid>

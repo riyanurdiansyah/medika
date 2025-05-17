@@ -72,10 +72,10 @@ const UserList = ({ users, roles, loading, onUserSelect, onAddUser, onToggleStat
                   
                   return (
                     <TableRow key={user.id}>
-                      <TableCell>{user.fullName}</TableCell>
+                      <TableCell>{user.fullname}</TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>{user.role}</TableCell>
-                      <TableCell>{superior ? superior.fullName : '-'}</TableCell>
+                      <TableCell>{superior ? superior.fullname : '-'}</TableCell>
                       <TableCell>
                         <Chip
                           label={user.status}
@@ -114,7 +114,7 @@ const UserList = ({ users, roles, loading, onUserSelect, onAddUser, onToggleStat
           user={selectedUser}
           roles={roles}
           onClose={handleCloseEdit}
-          onUpdate={onUserSelect}
+          onUpdate={() => onUserSelect(selectedUser.id!)}
         />
       )}
     </>

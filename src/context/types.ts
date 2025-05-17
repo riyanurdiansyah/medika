@@ -10,7 +10,7 @@ export type UserDataType = {
   id: string
   role: string
   email: string
-  fullName: string
+  fullname: string
   username: string
   password: string
   avatar?: string | null

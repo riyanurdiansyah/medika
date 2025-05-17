@@ -90,7 +90,7 @@ const OfferForm = () => {
         price: Number(formData.price),
         category: formData.category,
         submitterId: user?.id || '',
-        submitterName: user?.fullName || ''
+        submitterName: user?.fullname || ''
       }
 
       await productOfferService.createOffer(offerData)

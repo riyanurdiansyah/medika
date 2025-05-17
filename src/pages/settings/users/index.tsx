@@ -20,7 +20,7 @@ interface User {
   id: string
   username: string
   email: string
-  fullName: string
+  fullname: string
   displayName: string
   role: string
   status: 'active' | 'inactive'
@@ -173,7 +173,7 @@ const UserManagementPage = () => {
         
         return (
           <Chip
-            label={superior.fullName || superior.displayName || 'Unnamed User'}
+            label={superior.fullname || superior.displayName || 'Unnamed User'}
             color="default"
             size="small"
             sx={{ 

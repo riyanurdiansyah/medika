@@ -1,36 +1,31 @@
 // ** React Imports
-import { useState } from 'react'
+import { useRouter } from 'next/router'
 
 // ** MUI Imports
 import Grid from '@mui/material/Grid'
+import { Alert } from '@mui/material'
 
 // ** Custom Components Imports
 import PageHeader from 'src/@core/components/page-header'
 import RequestList from 'src/components/requests/RequestList'
-import { Request } from 'src/types/request'
+import { useRequests } from 'src/hooks/useRequests'
+import { useAuth } from 'src/hooks/useAuth'
 
 const MyRequestsPage = () => {
-  const [requests, setRequests] = useState<Request[]>([])
-  const [loading, setLoading] = useState<boolean>(false)
+  const router = useRouter()
+  const { user } = useAuth()
+  const { requests, loading, error, refreshRequests } = useRequests()
 
   const handleViewRequest = (requestId: string) => {
-    // Implement view request logic
-    console.log('View request:', requestId)
+    router.push(`/requests/view/${requestId}`)
   }
 
   const handleAddRequest = () => {
-    // Implement add request logic
-    console.log('Add new request')
+    router.push('/requests/submit')
   }
 
-  const handleApproveRequest = (requestId: string) => {
-    // Implement approve request logic
-    console.log('Approve request:', requestId)
-  }
-
-  const handleRejectRequest = (requestId: string) => {
-    // Implement reject request logic
-    console.log('Reject request:', requestId)
+  if (error) {
+    return <Alert severity="error">{error}</Alert>
   }
 
   return (
@@ -43,11 +38,11 @@ const MyRequestsPage = () => {
         <RequestList
           requests={requests}
           loading={loading}
-          userRole="Sales"
+          userRole={user?.role || ''}
           onViewRequest={handleViewRequest}
           onAddRequest={handleAddRequest}
-          onApproveRequest={handleApproveRequest}
-          onRejectRequest={handleRejectRequest}
+          onApproveRequest={() => {}} // Not used in my requests view
+          onRejectRequest={() => {}} // Not used in my requests view
         />
       </Grid>
     </Grid>

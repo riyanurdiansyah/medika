@@ -2,6 +2,17 @@ import { Timestamp } from 'firebase/firestore'
 
 export type RequestStatus = 'pending' | 'approved_supervisor' | 'approved_manager' | 'approved_deputy' | 'rejected' | 'completed'
 export type RequestType = 'goods' | 'training' | 'other'
+export type ApprovalStatus = 'approved' | 'rejected'
+
+export interface ApprovalHistoryEntry {
+  level: number
+  status: ApprovalStatus
+  approverId: string
+  approverName: string
+  approverRole: string
+  comment?: string
+  timestamp: Timestamp
+}
 
 export interface Request {
   id: string
@@ -14,15 +25,7 @@ export interface Request {
   createdAt: Timestamp
   updatedAt: Timestamp
   currentApprovalLevel: number // 0: pending, 1: supervisor, 2: manager, 3: deputy
-  approvalHistory: {
-    level: number
-    status: 'approved' | 'rejected'
-    approverId: string
-    approverName: string
-    approverRole: string
-    comment?: string
-    timestamp: Timestamp
-  }[]
+  approvalHistory: ApprovalHistoryEntry[]
   attachments?: string[] // URLs to attached files
   estimatedCost?: number
 } 

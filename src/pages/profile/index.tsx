@@ -51,8 +51,8 @@ const ProfilePage = () => {
   const userData: UserData = {
     id: user.id,
     email: user.email,
-    fullName: user.fullName,
-    displayName: user.fullName,
+    fullname: user.fullname,
+    displayName: user.fullname,
     username: user.username || '',
     avatar: user.avatar || null,
     role: user.role,
@@ -75,14 +75,14 @@ const ProfilePage = () => {
               <ProfileDetails>
                 <Avatar
                   src={userData.avatar || undefined}
-                  alt={userData.fullName}
+                  alt={userData.fullname}
                   sx={{ width: 120, height: 120, mr: 4 }}
                 >
-                  {userData.fullName?.charAt(0)}
+                  {userData.fullname?.charAt(0)}
                 </Avatar>
                 <Box>
                   <Typography variant='h5' sx={{ mb: 1 }}>
-                    {userData.fullName}
+                    {userData.fullname}
                   </Typography>
                   <Typography color='text.secondary'>
                     <Icon icon='tabler:shield' fontSize={20} style={{ verticalAlign: 'middle' }} />
@@ -98,7 +98,7 @@ const ProfilePage = () => {
               <Box>
                 <InfoRow label='Username' value={userData.username} />
                 <InfoRow label='Email' value={userData.email} />
-                <InfoRow label='Full Name' value={userData.fullName} />
+                <InfoRow label='Full Name' value={userData.fullname} />
                 <InfoRow label='Role' value={userData.role} />
               </Box>
             </CardContent>

@@ -8,21 +8,38 @@ import Grid from '@mui/material/Grid'
 import PageHeader from 'src/@core/components/page-header'
 import RequestForm from 'src/components/requests/RequestForm'
 import { RequestType } from 'src/types/request'
+import { requestService } from 'src/services/requestService'
+import { useAuth } from 'src/hooks/useAuth'
+import toast from 'react-hot-toast'
 
 const SubmitRequestPage = () => {
   const router = useRouter()
+  const { user } = useAuth()
 
-  const handleSubmit = (data: {
+  const handleSubmit = async (data: {
     title: string
     description: string
     type: RequestType
     estimatedCost?: number
   }) => {
-    // Implement submit logic
-    console.log('Submit request:', data)
-    
-    // Navigate back to list after submit
-    router.push('/requests/list')
+    try {
+      if (!user) {
+        toast.error('You must be logged in to submit a request')
+        return
+      }
+
+      await requestService.createRequest({
+        ...data,
+        requesterId: user.id,
+        requesterName: user.fullname
+      })
+
+      toast.success('Request submitted successfully')
+      router.push('/requests/list')
+    } catch (err) {
+      console.error('Error submitting request:', err)
+      toast.error('Failed to submit request')
+    }
   }
 
   const handleCancel = () => {

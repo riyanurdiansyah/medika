@@ -25,7 +25,7 @@ import toast from 'react-hot-toast'
 
 interface UserFormData {
   email: string
-  fullName: string
+  fullname: string
   password: string
   role: string
   directSuperior?: string
@@ -33,7 +33,7 @@ interface UserFormData {
 
 const defaultFormData: UserFormData = {
   email: '',
-  fullName: '',
+  fullname: '',
   password: '',
   role: 'subscriber',
   directSuperior: ''
@@ -114,7 +114,7 @@ const UsersPage = () => {
     try {
       setSubmitting(true)
 
-      if (!formData.email || !formData.fullName || !formData.password) {
+      if (!formData.email || !formData.fullname || !formData.password) {
         toast.error('Please fill in all required fields')
         return
       }
@@ -127,7 +127,7 @@ const UsersPage = () => {
 
       await userService.createUser({
         email: formData.email,
-        displayName: formData.fullName,
+        displayName: formData.fullname,
         role: formData.role,
         status: 'active',
         password: formData.password,
@@ -188,8 +188,8 @@ const UsersPage = () => {
               fullWidth
               label="Full Name"
               type="text"
-              value={formData.fullName}
-              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+              value={formData.fullname}
+              onChange={(e) => setFormData({ ...formData, fullname: e.target.value })}
               disabled={submitting}
               sx={{ mb: 4 }}
               required
@@ -244,7 +244,7 @@ const UsersPage = () => {
                 >
                   {getEligibleSuperiors().map(user => (
                     <MenuItem key={user.id} value={user.id}>
-                      {user.fullName} ({user.role})
+                      {user.fullname} ({user.role})
                     </MenuItem>
                   ))}
                 </Select>
@@ -265,7 +265,7 @@ const UsersPage = () => {
             disabled={
               submitting || 
               !formData.email || 
-              !formData.fullName || 
+              !formData.fullname || 
               !formData.password || 
               loadingRoles ||
               (formData.role === 'sales' && !formData.directSuperior) // Disable if sales role without superior

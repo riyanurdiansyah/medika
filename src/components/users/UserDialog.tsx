@@ -28,6 +28,7 @@ interface UserFormData {
   password?: string
   directSuperior?: string
   id?: string
+  status: 'active' | 'inactive'
 }
 
 interface UserDialogProps {
@@ -46,7 +47,8 @@ const UserDialog = ({ open, onClose, onSubmit, initialData, mode }: UserDialogPr
     role: initialData?.role || '',
     password: '',
     directSuperior: initialData?.directSuperior || '',
-    id: initialData?.id
+    id: initialData?.id,
+    status: initialData?.status || 'active'
   })
   const [roles, setRoles] = useState<UserRole[]>([])
   const [loading, setLoading] = useState(false)
@@ -69,7 +71,8 @@ const UserDialog = ({ open, onClose, onSubmit, initialData, mode }: UserDialogPr
         role: '',
         password: '',
         directSuperior: '',
-        id: undefined
+        id: undefined,
+        status: 'active'
       })
     }
   }, [initialData, open])
@@ -153,35 +156,41 @@ const UserDialog = ({ open, onClose, onSubmit, initialData, mode }: UserDialogPr
       .sort((a, b) => a.fullname.localeCompare(b.fullname))
   }
 
-  const handleSubmit = async () => {
+  const   handleSubmit = async () => {
     try {
+      setLoading(true)
       const validationError = validateForm()
       if (validationError) {
         setError(validationError)
+        setLoading(false)
         return
       }
 
       setError('')
-      setLoading(true)
+      console.log('formData', formData)
 
       if (mode === 'add') {
-        // Create Firebase Auth user first
-        const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password!)
-        
-        // If auth creation successful, create Firestore document
-        const userData = {
-          uid: userCredential.user.uid,
+        // Create auth user
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          formData.email,
+          formData.password!
+        )
+
+        // If auth creation successful, create Firestore document)
+        const firestoreData = {
           username: formData.username,
           email: formData.email,
           fullname: formData.fullname,
           role: formData.role,
-          status: 'active',
+          status: formData.status as 'active' | 'inactive',
+          directSuperior: formData.directSuperior,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         }
 
         // Store in Firestore using the auth UID as document ID
-        await setDoc(doc(db, 'users', userCredential.user.uid), userData)
+        await setDoc(doc(db, 'users', userCredential.user.uid), firestoreData)
       }
 
       // Call parent's onSubmit for edit mode or additional handling
@@ -281,9 +290,10 @@ const UserDialog = ({ open, onClose, onSubmit, initialData, mode }: UserDialogPr
             <Grid item xs={12}>
               <Autocomplete
                 options={getEligibleSuperiors()}
-                getOptionLabel={(option: UserData) => `${option.fullname} (${option.role})`}
+                getOptionLabel={(option: UserData) => `${option.fullname}`}
                 value={users.find(user => user.id === formData.directSuperior) || null}
                 onChange={(_, newValue) => {
+                  console.log('newValue', newValue)
                   setFormData({
                     ...formData,
                     directSuperior: newValue?.id || ''

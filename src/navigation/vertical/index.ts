@@ -23,29 +23,21 @@ const navigation = (): VerticalNavItemsType => {
       children: [
         {
           title: 'My Requests',
-          path: '/requests/list',
-          action: 'read',
-          subject: 'sales-role'
+                    path: '/requests/list'
         },
         {
           title: 'Submit Request',
-          path: '/requests/submit',
-          action: 'read',
-          subject: 'sales-role'
+                    path: '/requests/submit'
         },
         {
           title: 'Approvals',
-          path: '/requests/approvals',
-          action: 'approve',
-          subject: 'approval-role'
+                    path: '/requests/approvals'
         }
       ]
     },
     {
       title: 'Settings',
-      icon: 'tabler:settings',
-      action: 'manage',
-      subject: 'Super Admin',
+            icon: 'tabler:settings',
       children: [
         {
           title: 'Manage User',

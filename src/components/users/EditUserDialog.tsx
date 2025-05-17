@@ -29,7 +29,7 @@ interface EditUserDialogProps {
 const EditUserDialog = ({ open, user, roles, onClose, onUpdate }: EditUserDialogProps) => {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
-    fullName: user.fullName || '',
+    fullname: user.fullname || '',
     email: user.email || '',
     role: user.role || '',
     directSuperior: user.directSuperior || ''
@@ -63,8 +63,8 @@ const EditUserDialog = ({ open, user, roles, onClose, onUpdate }: EditUserDialog
               <TextField
                 fullWidth
                 label="Full Name"
-                value={formData.fullName}
-                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                value={formData.fullname}
+                onChange={(e) => setFormData({ ...formData, fullname: e.target.value })}
                 disabled={loading}
               />
             </Grid>
@@ -123,7 +123,7 @@ const EditUserDialog = ({ open, user, roles, onClose, onUpdate }: EditUserDialog
         <Button 
           variant="contained" 
           onClick={handleSubmit}
-          disabled={loading || !formData.email || !formData.fullName || !formData.role}
+          disabled={loading || !formData.email || !formData.fullname || !formData.role}
         >
           {loading ? 'Saving...' : 'Save Changes'}
         </Button>

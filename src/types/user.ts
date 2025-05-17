@@ -1,7 +1,6 @@
 export interface UserData {
   id?: string
   email: string
-  displayName: string
   fullname: string
   username?: string
   avatar?: string | null
@@ -14,7 +13,7 @@ export interface UserData {
 
 export interface CreateUserData {
   email: string
-  displayName: string
+  fullname: string
   role: string
   status: 'active' | 'inactive'
   password: string
