@@ -1,12 +1,14 @@
 import { DataGrid, GridRenderCellParams, GridColDef } from '@mui/x-data-grid'
-import { Card, CardHeader, Chip, Button, IconButton, Box, Tooltip } from '@mui/material'
+import { Card, CardHeader, Chip, Button, IconButton, Box, Tooltip, Typography, CardContent } from '@mui/material'
 import { UserRole } from 'src/types/user'
+import { ApprovalLevel } from 'src/services/levelService'
 import Icon from 'src/@core/components/icon'
 import { format, isValid } from 'date-fns'
 import { Timestamp } from 'firebase/firestore'
 
 interface RoleListProps {
   roles: UserRole[]
+  levels: ApprovalLevel[]
   loading: boolean
   onRoleSelect: (roleId: string) => void
   onAddRole: () => void
@@ -14,9 +16,14 @@ interface RoleListProps {
 }
 
 type RoleStatus = 'active' | 'inactive'
-type ChipColor = 'success' | 'error'
+type ChipColor = 'success' | 'error' | 'warning'
 
-const RoleList = ({ roles, loading, onRoleSelect, onAddRole, onToggleStatus }: RoleListProps) => {
+const RoleList = ({ roles, levels, loading, onRoleSelect, onAddRole, onToggleStatus }: RoleListProps) => {
+  const getLevelName = (level: string) => {
+    const levelObj = levels.find(l => l.order.toString() === level)
+    return levelObj ? levelObj.name : 'Unknown Level'
+  }
+
   const columns: GridColDef<UserRole>[] = [
     { 
       field: 'name', 
@@ -29,6 +36,13 @@ const RoleList = ({ roles, loading, onRoleSelect, onAddRole, onToggleStatus }: R
       headerName: 'Description', 
       flex: 3,
       minWidth: 200 
+    },
+    {
+      field: 'level',
+      headerName: 'Level',
+      flex: 1,
+      minWidth: 130,
+      valueGetter: (params) => getLevelName(params.row.level)
     },
     { 
       field: 'createdAt', 
@@ -89,6 +103,8 @@ const RoleList = ({ roles, loading, onRoleSelect, onAddRole, onToggleStatus }: R
         
         return (
           <Box>
+            {!isSystemRole && (
+              <>
             <Tooltip title="Edit">
               <span>
                 <IconButton
@@ -97,7 +113,6 @@ const RoleList = ({ roles, loading, onRoleSelect, onAddRole, onToggleStatus }: R
                     e.stopPropagation()
                     onRoleSelect(params.row.id)
                   }}
-                  disabled={isSystemRole}
                   color="primary"
                 >
                   <Icon icon="tabler:edit" />
@@ -112,13 +127,14 @@ const RoleList = ({ roles, loading, onRoleSelect, onAddRole, onToggleStatus }: R
                     e.stopPropagation()
                     onToggleStatus(params.row.id, params.row.status || 'active')
                   }}
-                  disabled={isSystemRole}
                   color={isActive ? 'error' : 'success'}
                 >
                   <Icon icon={isActive ? 'tabler:shield-off' : 'tabler:shield-check'} />
                 </IconButton>
               </span>
             </Tooltip>
+              </>
+            )}
           </Box>
         )
       }
@@ -128,7 +144,16 @@ const RoleList = ({ roles, loading, onRoleSelect, onAddRole, onToggleStatus }: R
   return (
     <Card>
       <CardHeader 
-        title='Roles'
+        title={
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography variant="h5" sx={{ mr: 2 }}>Roles</Typography>
+            <Tooltip title="Roles are ordered by approval level. Higher levels have more permissions.">
+              <Box component="span" sx={{ color: 'text.secondary' }}>
+                <Icon icon="mdi:information-outline" fontSize={20} />
+              </Box>
+            </Tooltip>
+          </Box>
+        }
         action={
           <Button
             variant="contained"
@@ -142,6 +167,7 @@ const RoleList = ({ roles, loading, onRoleSelect, onAddRole, onToggleStatus }: R
           </Button>
         }
       />
+      <CardContent>
       <DataGrid
         rows={roles}
         columns={columns}
@@ -152,6 +178,9 @@ const RoleList = ({ roles, loading, onRoleSelect, onAddRole, onToggleStatus }: R
         initialState={{
           pagination: {
             paginationModel: { pageSize: 10 }
+          },
+          sorting: {
+            sortModel: [{ field: 'level', sort: 'asc' }]
           }
         }}
         pageSizeOptions={[10, 25, 50]}
@@ -161,6 +190,7 @@ const RoleList = ({ roles, loading, onRoleSelect, onAddRole, onToggleStatus }: R
           }
         }}
       />
+      </CardContent>
     </Card>
   )
 }

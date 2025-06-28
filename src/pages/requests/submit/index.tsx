@@ -31,7 +31,8 @@ const SubmitRequestPage = () => {
       await requestService.createRequest({
         ...data,
         requesterId: user.id,
-        requesterName: user.fullname
+        requesterName: user.fullname,
+        createdBy: user.username || user.fullname
       })
 
       toast.success('Request submitted successfully')

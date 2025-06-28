@@ -1,8 +1,8 @@
 import { Timestamp } from 'firebase/firestore'
 
-export type RequestStatus = 'pending' | 'approved_supervisor' | 'approved_manager' | 'approved_deputy' | 'rejected' | 'completed'
+export type RequestStatus = 'pending' | 'approved_supervisor' | 'approved_manager' | 'approved_deputy' | 'rejected' | 'completed' | 'resubmitted'
 export type RequestType = 'goods' | 'training' | 'other'
-export type ApprovalStatus = 'approved' | 'rejected'
+export type ApprovalStatus = 'approved' | 'rejected' | 'resubmitted'
 
 export interface ApprovalHistoryEntry {
   level: number
@@ -28,4 +28,5 @@ export interface Request {
   approvalHistory: ApprovalHistoryEntry[]
   attachments?: string[] // URLs to attached files
   estimatedCost?: number
+  createdBy?: string // Add createdBy field to match Flutter pattern
 } 

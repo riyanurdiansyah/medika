@@ -1,12 +1,12 @@
 import { DataGrid, GridRenderCellParams, GridColDef } from '@mui/x-data-grid'
 import { Card, CardHeader, Chip, Button, IconButton, Box, Tooltip } from '@mui/material'
-import { Request, RequestStatus } from 'src/types/request'
+import { RequestFormM } from 'src/types/requestForm'
 import Icon from 'src/@core/components/icon'
 import { format } from 'date-fns'
 import { Timestamp } from 'firebase/firestore'
 
-interface RequestListProps {
-  requests: Request[]
+interface RequestFormListProps {
+  requests: RequestFormM[]
   loading: boolean
   userRole: string
   onViewRequest: (requestId: string) => void
@@ -18,7 +18,7 @@ interface RequestListProps {
 
 type ChipColor = 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'
 
-const RequestList = ({ 
+const RequestFormList = ({ 
   requests, 
   loading, 
   userRole,
@@ -27,72 +27,60 @@ const RequestList = ({
   onApproveRequest,
   onRejectRequest,
   onResubmitRequest
-}: RequestListProps) => {
-  const getStatusColor = (status: RequestStatus): ChipColor => {
-    const statusColors: Record<RequestStatus, ChipColor> = {
-      pending: 'warning',
-      approved_supervisor: 'info',
-      approved_manager: 'info',
-      approved_deputy: 'info',
-      rejected: 'error',
-      completed: 'success',
-      resubmitted: 'warning'
+}: RequestFormListProps) => {
+  const getStatusColor = (status: string): ChipColor => {
+    const statusColors: Record<string, ChipColor> = {
+      Submitted: 'warning',
+      APPROVED: 'success',
+      REJECTED: 'error',
     }
-    return statusColors[status]
+    return statusColors[status] || 'default'
   }
 
-  const getStatusLabel = (status: RequestStatus): string => {
-    const statusLabels: Record<RequestStatus, string> = {
+  const getStatusLabel = (status: string): string => {
+    const statusLabels: Record<string, string> = {
       pending: 'Pending',
-      approved_supervisor: 'Approved by Supervisor',
-      approved_manager: 'Approved by Manager',
-      approved_deputy: 'Approved by Deputy',
+      approved: 'Approved',
       rejected: 'Rejected',
-      completed: 'Completed',
-      resubmitted: 'Resubmitted'
+      completed: 'Completed'
     }
-    return statusLabels[status]
+    return statusLabels[status] || status
   }
 
-  const canApprove = (request: Request): boolean => {
-    const approvalLevels = {
-      'Supervisor': 1,
-      'Manager': 2,
-      'Deputy Manager': 3
-    }
-
-    const userApprovalLevel = approvalLevels[userRole as keyof typeof approvalLevels] || 0
-    return userApprovalLevel === request.currentApprovalLevel && request.status !== 'rejected'
+  const canApprove = (request: RequestFormM): boolean => {
+    // Check if any approval is pending
+    const pendingApproval = request.approvals.find(approval => approval.status === 'pending')
+    return !!pendingApproval
   }
 
-  const columns: GridColDef<Request>[] = [
+  const columns: GridColDef<RequestFormM>[] = [
     { 
-      field: 'title', 
-      headerName: 'Title', 
-      flex: 2,
-      minWidth: 200 
+      field: 'noDokumen', 
+      headerName: 'Document No', 
+      flex: 1.5,
+      minWidth: 150 
     },
     { 
       field: 'type', 
       headerName: 'Type', 
       flex: 1,
-      minWidth: 120,
-      renderCell: (params: GridRenderCellParams<Request>) => (
+      minWidth: 250,
+      renderCell: (params: GridRenderCellParams<RequestFormM>) => (
         <Chip
-          label={params.value?.charAt(0).toUpperCase() + params.value?.slice(1)}
+          label={params.row.type}
           color="primary"
-          size="small"
+          size="medium"
         />
       )
     },
     { 
-      field: 'requesterName', 
-      headerName: 'Requester', 
+      field: 'alat', 
+      headerName: 'Equipment', 
       flex: 1.5,
       minWidth: 150 
     },
     { 
-      field: 'createdAt', 
+      field: 'dtCreated', 
       headerName: 'Created At', 
       flex: 1.5,
       minWidth: 180,
@@ -104,15 +92,21 @@ const RequestList = ({
       }
     },
     {
-      field: 'status',
+      field: 'approvalStatus',
       headerName: 'Status',
       flex: 1.5,
       minWidth: 180,
-      renderCell: (params: GridRenderCellParams<Request>) => {
-        const status = params.row.status
+      renderCell: (params: GridRenderCellParams<RequestFormM>) => {
+        // Get the latest approval status
+        const latestApproval = params.row.approvals.length > 0 
+          ? params.row.approvals[params.row.approvals.length - 1] 
+          : null
+        
+        const status = latestApproval?.status || 'SUBMITTED'
+        
         return (
           <Chip
-            label={getStatusLabel(status)}
+            label={status}
             color={getStatusColor(status)}
             sx={{ 
               height: 24,
@@ -129,10 +123,10 @@ const RequestList = ({
       flex: 1.5,
       minWidth: 150,
       sortable: false,
-      renderCell: (params: GridRenderCellParams<Request>) => {
+      renderCell: (params: GridRenderCellParams<RequestFormM>) => {
         const isApprovalView = window.location.pathname.includes('/requests/approvals')
         const showApprovalButtons = isApprovalView && canApprove(params.row)
-        const showResubmitButton = !isApprovalView && params.row.status === 'rejected' && onResubmitRequest
+        const showResubmitButton = !isApprovalView && params.row.approvals.some(a => a.status === 'rejected') && onResubmitRequest
         
         return (
           <Box sx={{ display: 'flex', gap: 1 }}>
@@ -251,4 +245,4 @@ const RequestList = ({
   )
 }
 
-export default RequestList 
+export default RequestFormList 

@@ -13,6 +13,7 @@ import {
 } from 'firebase/firestore'
 import { db } from 'src/configs/firebase'
 import { Request, RequestType, RequestStatus, ApprovalStatus, ApprovalHistoryEntry } from 'src/types/request'
+import { RequestFormM, createRequestFormMFromJson } from 'src/types/requestForm'
 import { generateGUID } from 'src/utils/guid'
 
 export interface CreateRequestData {
@@ -22,6 +23,7 @@ export interface CreateRequestData {
   requesterId: string
   requesterName: string
   estimatedCost?: number
+  createdBy?: string
 }
 
 const requestService = {
@@ -51,7 +53,8 @@ const requestService = {
   async getMyRequests(userId: string): Promise<Request[]> {
     const requestsCollection = collection(db, 'requests')
     try {
-      // Try with ordering first
+      // Convert Flutter pattern: where("createdBy", isEqualTo: dC.profile.value?.username)
+      // In our Next.js app, we use requesterId instead of createdBy
       const q = query(
         requestsCollection, 
         where('requesterId', '==', userId),
@@ -60,21 +63,28 @@ const requestService = {
       const requestsSnapshot = await getDocs(q)
       return this.mapRequestsData(requestsSnapshot)
     } catch (error) {
-      // Fallback to simple query if index is not ready
-      console.log('Falling back to simple query without ordering')
-      const fallbackQuery = query(
-        requestsCollection,
-        where('requesterId', '==', userId)
-      )
-      const fallbackSnapshot = await getDocs(fallbackQuery)
-      const requests = this.mapRequestsData(fallbackSnapshot)
+      console.error('Error fetching requests:', error)
       
-      // Sort in memory instead
-      return requests.sort((a: Request, b: Request) => {
-        const dateA = a.createdAt instanceof Timestamp ? a.createdAt.toMillis() : 0
-        const dateB = b.createdAt instanceof Timestamp ? b.createdAt.toMillis() : 0
-        return dateB - dateA // descending order
-      })
+      // Fallback to simple query if index is not ready (similar to Flutter error handling)
+      try {
+        console.log('Falling back to simple query without ordering')
+        const fallbackQuery = query(
+          requestsCollection,
+          where('requesterId', '==', userId)
+        )
+        const fallbackSnapshot = await getDocs(fallbackQuery)
+        const requests = this.mapRequestsData(fallbackSnapshot)
+        
+        // Sort in memory instead
+        return requests.sort((a: Request, b: Request) => {
+          const dateA = a.createdAt instanceof Timestamp ? a.createdAt.toMillis() : 0
+          const dateB = b.createdAt instanceof Timestamp ? b.createdAt.toMillis() : 0
+          return dateB - dateA // descending order
+        })
+      } catch (fallbackError) {
+        console.error('Fallback query also failed:', fallbackError)
+        throw new Error(`Failed to get documents: ${fallbackError}`)
+      }
     }
   },
 
@@ -86,6 +96,7 @@ const requestService = {
         ...data,
         createdAt: data.createdAt || Timestamp.now(),
         updatedAt: data.updatedAt || Timestamp.now(),
+        createdBy: data.createdBy || data.requesterName,
         approvalHistory: (data.approvalHistory || []).map((entry: any) => ({
           level: entry.level,
           status: entry.status as ApprovalStatus,
@@ -133,7 +144,8 @@ const requestService = {
       currentApprovalLevel: 1,
       approvalHistory: [],
       createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
+      updatedAt: serverTimestamp(),
+      createdBy: data.createdBy || data.requesterName
     })
 
     return guid
@@ -156,6 +168,17 @@ const requestService = {
     const request = await this.getRequestById(requestId)
     if (!request) throw new Error('Request not found')
 
+    // Get the requester's data to check direct superior
+    const requesterDoc = await getDoc(doc(db, 'users', request.requesterId))
+    if (!requesterDoc.exists()) throw new Error('Requester not found')
+    
+    const requesterData = requesterDoc.data()
+    
+    // Check if the approver is the direct superior
+    if (requesterData.directSuperior !== approverId) {
+      throw new Error('You are not authorized to approve this request. Only the direct superior can approve.')
+    }
+
     const nextLevel = request.currentApprovalLevel + 1
     
     // Normalize the role name to match getPendingApprovals
@@ -169,13 +192,20 @@ const requestService = {
         break
       case 'supervisor':
       case 'manager':
+      case 'usermanager':
         roleForStatus = normalizedRole
         break
       default:
         throw new Error('Invalid approver role')
     }
 
-    const status = nextLevel > 3 ? 'completed' : `approved_${roleForStatus}` as RequestStatus
+    // Determine the next status
+    let nextStatus: RequestStatus
+    if (nextLevel > 3) {
+      nextStatus = 'completed'
+    } else {
+      nextStatus = `approved_${roleForStatus}` as RequestStatus
+    }
 
     const newApprovalEntry: ApprovalHistoryEntry = {
       level: request.currentApprovalLevel,
@@ -186,9 +216,15 @@ const requestService = {
       timestamp: Timestamp.now()
     }
 
+    console.log('Updating request with:', {
+      status: nextStatus,
+      currentApprovalLevel: nextLevel,
+      approvalHistory: [...request.approvalHistory, newApprovalEntry]
+    })
+
     const requestDoc = doc(db, 'requests', requestId)
     await updateDoc(requestDoc, {
-      status,
+      status: nextStatus,
       currentApprovalLevel: nextLevel,
       approvalHistory: [...request.approvalHistory, newApprovalEntry],
       updatedAt: serverTimestamp()
@@ -201,6 +237,7 @@ const requestService = {
     approverName: string,
     approverRole: string,
   ): Promise<void> {
+    debugger;
     const request = await this.getRequestById(requestId)
     if (!request) throw new Error('Request not found')
 
@@ -224,11 +261,12 @@ const requestService = {
     })
   },
 
-  async getPendingApprovals(approverRole: string): Promise<Request[]> {
+  async getPendingApprovals(approverRole: string, approverId: string): Promise<Request[]> {
     const requestsCollection = collection(db, 'requests')
     let approvalLevel = 1 // Default for Supervisor
 
     console.log('Getting pending approvals for role:', approverRole)
+    console.log('Approver ID:', approverId)
 
     // Map roles to approval levels
     const normalizedRole = approverRole.toLowerCase().trim()
@@ -239,6 +277,7 @@ const requestService = {
         approvalLevel = 1
         break
       case 'manager':
+      case 'usermanager':
         approvalLevel = 2
         break
       case 'deputy manager':
@@ -265,6 +304,7 @@ const requestService = {
 
       console.log('Looking for requests with status:', previousStatus)
       
+      // First get all requests at the current level
       const q = query(
         requestsCollection,
         where('currentApprovalLevel', '==', approvalLevel),
@@ -273,13 +313,119 @@ const requestService = {
 
       console.log('Executing query for approval level:', approvalLevel)
       const requestsSnapshot = await getDocs(q)
-      const results = this.mapRequestsData(requestsSnapshot)
-      console.log('Query results:', results)
+      const allRequests = this.mapRequestsData(requestsSnapshot)
+      console.log('All requests at current level:', allRequests)
 
-      return results
+      // Filter requests where the current user is the direct superior
+      const filteredRequests = []
+      for (const request of allRequests) {
+        const requesterDoc = await getDoc(doc(db, 'users', request.requesterId))
+        if (requesterDoc.exists()) {
+          const requesterData = requesterDoc.data()
+          console.log('Requester data:', requesterData)
+          console.log('Checking if', approverId, 'is direct superior of', request.requesterId)
+          if (requesterData.directSuperior === approverId) {
+            console.log('Found matching request:', request)
+            filteredRequests.push(request)
+          }
+        }
+      }
+
+      console.log('Final filtered requests:', filteredRequests)
+      return filteredRequests
     } catch (error) {
       console.error('Error fetching pending approvals:', error)
       return []
+    }
+  },
+
+  async resubmitRequest(requestId: string): Promise<void> {
+    const request = await this.getRequestById(requestId)
+    if (!request) throw new Error('Request not found')
+
+    if (request.status !== 'rejected') {
+      throw new Error('Only rejected requests can be resubmitted')
+    }
+
+    const requestDoc = doc(db, 'requests', requestId)
+    await updateDoc(requestDoc, {
+      status: 'pending' as RequestStatus,
+      currentApprovalLevel: 1,
+      approvalHistory: [...request.approvalHistory, {
+        level: request.currentApprovalLevel,
+        status: 'resubmitted' as ApprovalStatus,
+        approverId: request.requesterId,
+        approverName: request.requesterName,
+        approverRole: 'requester',
+        comment: 'Request resubmitted by requester',
+        timestamp: Timestamp.now()
+      }],
+      updatedAt: serverTimestamp()
+    })
+  },
+
+  // Direct conversion of Flutter getRequests() function
+  // Flutter: where("createdBy", isEqualTo: dC.profile.value?.username)
+  async getRequestsByCreatedBy(username: string): Promise<RequestFormM[]> {
+    const requestsCollection = collection(db, 'requests')
+    try {
+      const q = query(
+        requestsCollection, 
+        where('createdBy', '==', username),
+        orderBy('dtCreated', 'desc')
+      )
+      const requestsSnapshot = await getDocs(q)
+      return requestsSnapshot.docs.map(doc => {
+        const data = doc.data()
+        return createRequestFormMFromJson({
+          id: doc.id,
+          ...data
+        })
+      })
+    } catch (error) {
+      console.error('Error fetching requests by createdBy:', error)
+      
+      // Fallback to simple query if index is not ready
+      try {
+        console.log('Falling back to simple query without ordering')
+        const fallbackQuery = query(
+          requestsCollection,
+          where('createdBy', '==', username)
+        )
+        const fallbackSnapshot = await getDocs(fallbackQuery)
+        const requests = fallbackSnapshot.docs.map(doc => {
+          const data = doc.data()
+          return createRequestFormMFromJson({
+            id: doc.id,
+            ...data
+          })
+        })
+        
+        // Sort in memory instead
+        return requests.sort((a: RequestFormM, b: RequestFormM) => {
+          const dateA = a.dtCreated instanceof Timestamp ? a.dtCreated.toMillis() : 0
+          const dateB = b.dtCreated instanceof Timestamp ? b.dtCreated.toMillis() : 0
+          return dateB - dateA // descending order
+        })
+      } catch (fallbackError) {
+        console.error('Fallback query also failed:', fallbackError)
+        throw new Error(`Failed to get documents: ${fallbackError}`)
+      }
+    }
+  },
+
+  async updateRequestForm(data: RequestFormM): Promise<RequestFormM | null> {
+    try {
+      const requestDoc = doc(db, 'requests', data.id)
+      await setDoc(requestDoc, {
+        ...data,
+        dtUpdated: serverTimestamp()
+      }, { merge: true })
+      
+      return data
+    } catch (error) {
+      console.error('Error updating request form:', error)
+      throw new Error(`Failed to update request form: ${error}`)
     }
   }
 }

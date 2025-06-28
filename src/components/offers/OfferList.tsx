@@ -80,7 +80,7 @@ const OfferList = ({ offers, loading, onAddOffer, userRole, onRefresh }: OfferLi
         approvalDialog.offerId,
         approvalDialog.stepId,
         approvalDialog.status,
-        user.fullName,
+        user.fullname,
         approvalDialog.comment
       )
       toast.success(`Offer ${approvalDialog.status} successfully`)

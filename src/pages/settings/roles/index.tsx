@@ -9,7 +9,11 @@ import {
   DialogActions, 
   Button, 
   TextField, 
-  Box
+  Box,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from '@mui/material'
 import Grid from '@mui/material/Grid'
 
@@ -17,6 +21,7 @@ import Grid from '@mui/material/Grid'
 import PageHeader from 'src/@core/components/page-header'
 import RoleList from 'src/components/roles/RoleList'
 import { useRoles } from 'src/hooks/useRoles'
+import { useLevels } from 'src/hooks/useLevels'
 import { roleService } from 'src/services/roleService'
 import { UserRole } from 'src/types/user'
 import toast from 'react-hot-toast'
@@ -24,16 +29,19 @@ import toast from 'react-hot-toast'
 interface RoleFormData {
   name: string
   description: string
+  level: string
 }
 
 const defaultFormData: RoleFormData = {
   name: '',
-  description: ''
+  description: '',
+  level: ''
 }
 
 const RoleManagementPage = () => {
   const router = useRouter()
-  const { roles, loading, error, refreshRoles } = useRoles()
+  const { roles, loading: rolesLoading, error: rolesError, refreshRoles } = useRoles()
+  const { levels, loading: levelsLoading, error: levelsError } = useLevels()
   const [openDialog, setOpenDialog] = useState(false)
   const [formData, setFormData] = useState<RoleFormData>(defaultFormData)
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null)
@@ -42,10 +50,14 @@ const RoleManagementPage = () => {
   const handleRoleSelect = (roleId: string) => {
     const role = roles.find(r => r.id === roleId)
     if (role && !role.isSystem) {
+      // Find the level ID that corresponds to the role's level order
+      const levelId = levels.find(l => l.order.toString() === role.level)?.id || ''
+      
       setSelectedRole(role)
       setFormData({
         name: role.name,
-        description: role.description
+        description: role.description,
+        level: levelId
       })
       setOpenDialog(true)
     }
@@ -92,8 +104,22 @@ const RoleManagementPage = () => {
     try {
       setSubmitting(true)
 
-      if (!formData.name || !formData.description) {
+      if (!formData.name || !formData.description || !formData.level) {
         toast.error('Please fill in all required fields')
+        return
+      }
+
+      // Get the selected level's order
+      const selectedLevel = levels.find(l => l.id === formData.level)
+      if (!selectedLevel) {
+        toast.error('Selected level not found')
+        return
+      }
+
+      // Check if level is already taken by another role
+      const existingRoleWithLevel = roles.find(r => r.level === selectedLevel.order.toString() && r.id !== selectedRole?.id)
+      if (existingRoleWithLevel) {
+        toast.error(`Level "${selectedLevel.name}" is already assigned to role "${existingRoleWithLevel.name}"`)
         return
       }
 
@@ -102,7 +128,7 @@ const RoleManagementPage = () => {
         await roleService.updateRole(selectedRole.id, {
           name: formData.name,
           description: formData.description,
-          guid: '' // This will be overwritten by roleService with a generated GUID
+          level: selectedLevel.order.toString()
         })
         toast.success('Role updated successfully')
       } else {
@@ -114,7 +140,7 @@ const RoleManagementPage = () => {
           permissions: [],
           guid: '', // This will be overwritten by roleService with a generated GUID
           status: 'active',
-          level: 1 // Default level
+          level: selectedLevel.order.toString()
         })
         toast.success('Role created successfully')
       }
@@ -129,8 +155,8 @@ const RoleManagementPage = () => {
     }
   }
 
-  if (error) {
-    return <Alert severity="error">{error}</Alert>
+  if (rolesError || levelsError) {
+    return <Alert severity="error">{rolesError || levelsError}</Alert>
   }
 
   return (
@@ -142,7 +168,8 @@ const RoleManagementPage = () => {
       <Grid item xs={12}>
         <RoleList
           roles={roles}
-          loading={loading}
+          levels={levels}
+          loading={rolesLoading}
           onRoleSelect={handleRoleSelect}
           onAddRole={handleAddRole}
           onToggleStatus={handleToggleStatus}
@@ -181,6 +208,22 @@ const RoleManagementPage = () => {
                 required
                 sx={{ mb: 4 }}
               />
+              <FormControl fullWidth sx={{ mb: 4 }}>
+                <InputLabel>Approval Level</InputLabel>
+                <Select
+                  value={formData.level}
+                  label="Approval Level"
+                  onChange={(e) => setFormData({ ...formData, level: e.target.value })}
+                  disabled={submitting || levelsLoading}
+                  required
+                >
+                  {levels.map((level) => (
+                    <MenuItem key={level.id} value={level.id}>
+                      {level.name} (Order: {level.order})
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </Box>
           </DialogContent>
           <DialogActions>
@@ -193,7 +236,7 @@ const RoleManagementPage = () => {
             <Button 
               variant="contained" 
               onClick={handleSubmit}
-              disabled={submitting || !formData.name || !formData.description}
+              disabled={submitting || !formData.name || !formData.description || !formData.level || levelsLoading}
             >
               {submitting ? 'Saving...' : selectedRole ? 'Update Role' : 'Add Role'}
             </Button>

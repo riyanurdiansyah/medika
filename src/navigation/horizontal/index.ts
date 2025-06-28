@@ -4,20 +4,6 @@ import { HorizontalNavItemsType } from 'src/@core/layouts/types'
 const navigation = (): HorizontalNavItemsType => {
   return [
     {
-      title: 'Product Offers',
-      icon: 'tabler:package',
-      children: [
-        {
-          title: 'Submit Offer',
-          path: '/product-offers/submit'
-        },
-        {
-          title: 'Approvals',
-          path: '/product-offers/approvals'
-        }
-      ]
-    },
-    {
       title: 'Requests',
       icon: 'tabler:clipboard',
       children: [
@@ -48,8 +34,8 @@ const navigation = (): HorizontalNavItemsType => {
           path: '/settings/roles'
         },
         {
-          title: 'Approval Settings',
-          path: '/settings/approval-settings'
+          title: 'Level Management',
+          path: '/settings/levels'
         }
       ]
     }

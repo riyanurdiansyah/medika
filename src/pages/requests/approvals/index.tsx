@@ -31,7 +31,7 @@ const ApprovalsPage = () => {
       
       try {
         setLoading(true)
-        const data = await requestService.getPendingApprovals(user.role)
+        const data = await requestService.getPendingApprovals(user.role, user.id)
         console.log('Fetched requests:', data)
         setRequests(data)
       } catch (err) {
@@ -60,7 +60,7 @@ const ApprovalsPage = () => {
         user.role
       )
       // Refresh the requests list
-      const updatedRequests = await requestService.getPendingApprovals(user.role)
+      const updatedRequests = await requestService.getPendingApprovals(user.role, user.id)
       setRequests(updatedRequests)
     } catch (err) {
       console.error('Error approving request:', err)
@@ -79,7 +79,7 @@ const ApprovalsPage = () => {
         user.role
       )
       // Refresh the requests list
-      const updatedRequests = await requestService.getPendingApprovals(user.role)
+      const updatedRequests = await requestService.getPendingApprovals(user.role, user.id)
       setRequests(updatedRequests)
     } catch (err) {
       console.error('Error rejecting request:', err)

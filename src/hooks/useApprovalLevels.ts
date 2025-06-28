@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
-import { doc, getDoc } from 'firebase/firestore'
+import { collection, getDocs } from 'firebase/firestore'
 import { db } from 'src/configs/firebase'
 
-interface ApprovalLevel {
+export interface ApprovalLevel {
+  id: string
+  name: string
   level: number
-  role: string
-  title: string
+  description?: string
 }
 
 export const useApprovalLevels = () => {
@@ -14,24 +15,18 @@ export const useApprovalLevels = () => {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchApprovalLevels = async () => {
+    const fetchLevels = async () => {
       try {
-        setLoading(true)
-        const approvalSettingsRef = doc(db, 'settings', 'approvalFlow')
-        const approvalSettingsDoc = await getDoc(approvalSettingsRef)
+        const levelsCollection = collection(db, 'approvalLevels')
+        const snapshot = await getDocs(levelsCollection)
+        const levelsData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as ApprovalLevel[]
         
-        if (approvalSettingsDoc.exists()) {
-          setLevels(approvalSettingsDoc.data().levels)
-        } else {
-          // Default levels if not set
-          setLevels([
-            { level: 1, role: 'sales', title: 'Sales' },
-            { level: 2, role: 'supervisor', title: 'Supervisor' },
-            { level: 3, role: 'manager', title: 'Manager' },
-            { level: 4, role: 'deputy-manager', title: 'Deputy Manager' }
-          ])
-        }
-        setError(null)
+        // Sort by level
+        levelsData.sort((a, b) => a.level - b.level)
+        setLevels(levelsData)
       } catch (err) {
         console.error('Error fetching approval levels:', err)
         setError('Failed to fetch approval levels')
@@ -40,20 +35,8 @@ export const useApprovalLevels = () => {
       }
     }
 
-    fetchApprovalLevels()
+    fetchLevels()
   }, [])
 
-  const getRoleLevel = (role: string): number => {
-    const level = levels.find(l => l.role === role)
-    return level?.level || 0
-  }
-
-  const getHigherLevelRoles = (role: string): string[] => {
-    const currentLevel = getRoleLevel(role)
-    return levels
-      .filter(l => l.level > currentLevel)
-      .map(l => l.role)
-  }
-
-  return { levels, loading, error, getRoleLevel, getHigherLevelRoles }
+  return { levels, loading, error }
 } 

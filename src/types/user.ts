@@ -26,7 +26,7 @@ export interface UserRole {
   name: string
   description: string
   isSystem: boolean
-  level: number
+  level: string
   status: 'active' | 'inactive'
   createdAt?: Date
   updatedAt?: Date

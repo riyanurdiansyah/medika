@@ -7,14 +7,16 @@ import { Alert } from '@mui/material'
 
 // ** Custom Components Imports
 import PageHeader from 'src/@core/components/page-header'
-import RequestList from 'src/components/requests/RequestList'
-import { useRequests } from 'src/hooks/useRequests'
+import RequestFormList from 'src/components/requests/RequestFormList'
+import { useRequestsByCreatedBy } from 'src/hooks/useRequests'
 import { useAuth } from 'src/hooks/useAuth'
+import { toast } from 'react-hot-toast'
+import { requestService } from 'src/services/requestService'
 
 const MyRequestsPage = () => {
   const router = useRouter()
   const { user } = useAuth()
-  const { requests, loading, error, refreshRequests } = useRequests()
+  const { requests, loading, error, refreshRequests } = useRequestsByCreatedBy()
 
   const handleViewRequest = (requestId: string) => {
     router.push(`/requests/view/${requestId}`)
@@ -22,6 +24,17 @@ const MyRequestsPage = () => {
 
   const handleAddRequest = () => {
     router.push('/requests/submit')
+  }
+
+  const handleResubmitRequest = async (requestId: string) => {
+    try {
+      await requestService.resubmitRequest(requestId)
+      toast.success('Request resubmitted successfully')
+      refreshRequests()
+    } catch (err) {
+      console.error('Error resubmitting request:', err)
+      toast.error('Failed to resubmit request')
+    }
   }
 
   if (error) {
@@ -35,7 +48,7 @@ const MyRequestsPage = () => {
         subtitle={<>View and manage your requests</>}
       />
       <Grid item xs={12}>
-        <RequestList
+        <RequestFormList
           requests={requests}
           loading={loading}
           userRole={user?.role || ''}
@@ -43,6 +56,7 @@ const MyRequestsPage = () => {
           onAddRequest={handleAddRequest}
           onApproveRequest={() => {}} // Not used in my requests view
           onRejectRequest={() => {}} // Not used in my requests view
+          onResubmitRequest={handleResubmitRequest}
         />
       </Grid>
     </Grid>
