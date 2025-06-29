@@ -37,13 +37,6 @@ const RoleList = ({ roles, levels, loading, onRoleSelect, onAddRole, onToggleSta
       flex: 3,
       minWidth: 200 
     },
-    {
-      field: 'level',
-      headerName: 'Level',
-      flex: 1,
-      minWidth: 130,
-      valueGetter: (params) => getLevelName(params.row.level)
-    },
     { 
       field: 'createdAt', 
       headerName: 'Created At', 

@@ -285,49 +285,47 @@ const UserDialog = ({ open, onClose, onSubmit, initialData, mode }: UserDialogPr
               </Select>
             </FormControl>
           </Grid>
-          {/* Show Direct Superior field when a role is selected */}
-          {formData.role && (
-            <Grid item xs={12}>
-              <Autocomplete
-                options={getEligibleSuperiors()}
-                getOptionLabel={(option: UserData) => `${option.fullname}`}
-                value={users.find(user => user.id === formData.directSuperior) || null}
-                onChange={(_, newValue) => {
-                  console.log('newValue', newValue)
-                  setFormData({
-                    ...formData,
-                    directSuperior: newValue?.id || ''
-                  })
-                }}
-                disabled={loading}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Direct Superior"
-                    placeholder="Search by name"
-                    fullWidth
-                  />
-                )}
-                renderOption={(props, option) => (
-                  <li {...props}>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <div>{option.fullname}</div>
-                      <div style={{ fontSize: '0.8rem', color: 'text.secondary' }}>
-                        {option.role}
-                      </div>
+          {/* Direct Superior field - always visible and optional */}
+          <Grid item xs={12}>
+            <Autocomplete
+              options={getEligibleSuperiors()}
+              getOptionLabel={(option: UserData) => `${option.fullname}`}
+              value={users.find(user => user.id === formData.directSuperior) || null}
+              onChange={(_, newValue) => {
+                console.log('newValue', newValue)
+                setFormData({
+                  ...formData,
+                  directSuperior: newValue?.id || ''
+                })
+              }}
+              disabled={loading}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Direct Superior (Optional)"
+                  placeholder="Search by name (optional)"
+                  fullWidth
+                />
+              )}
+              renderOption={(props, option) => (
+                <li {...props}>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div>{option.fullname}</div>
+                    <div style={{ fontSize: '0.8rem', color: 'text.secondary' }}>
+                      {option.role}
                     </div>
-                  </li>
-                )}
-                isOptionEqualToValue={(option, value) => option.id === value.id}
-                clearOnBlur={false}
-                clearOnEscape
-                handleHomeEndKeys
-                selectOnFocus
-                clearText="Clear selection"
-                noOptionsText="No eligible superiors found"
-              />
-            </Grid>
-          )}
+                  </div>
+                </li>
+              )}
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              clearOnBlur={false}
+              clearOnEscape
+              handleHomeEndKeys
+              selectOnFocus
+              clearText="Clear selection"
+              noOptionsText="No eligible superiors found"
+            />
+          </Grid>
           {error && (
             <Grid item xs={12}>
               <p style={{ color: 'red', margin: 0 }}>{error}</p>

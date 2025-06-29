@@ -13,7 +13,9 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem
+  MenuItem,
+  Switch,
+  FormControlLabel
 } from '@mui/material'
 import Grid from '@mui/material/Grid'
 
@@ -29,13 +31,13 @@ import toast from 'react-hot-toast'
 interface RoleFormData {
   name: string
   description: string
-  level: string
+  status: boolean
 }
 
 const defaultFormData: RoleFormData = {
   name: '',
   description: '',
-  level: ''
+  status: true
 }
 
 const RoleManagementPage = () => {
@@ -50,14 +52,11 @@ const RoleManagementPage = () => {
   const handleRoleSelect = (roleId: string) => {
     const role = roles.find(r => r.id === roleId)
     if (role && !role.isSystem) {
-      // Find the level ID that corresponds to the role's level order
-      const levelId = levels.find(l => l.order.toString() === role.level)?.id || ''
-      
       setSelectedRole(role)
       setFormData({
         name: role.name,
         description: role.description,
-        level: levelId
+        status: role.status === 'active'
       })
       setOpenDialog(true)
     }
@@ -104,22 +103,8 @@ const RoleManagementPage = () => {
     try {
       setSubmitting(true)
 
-      if (!formData.name || !formData.description || !formData.level) {
+      if (!formData.name || !formData.description) {
         toast.error('Please fill in all required fields')
-        return
-      }
-
-      // Get the selected level's order
-      const selectedLevel = levels.find(l => l.id === formData.level)
-      if (!selectedLevel) {
-        toast.error('Selected level not found')
-        return
-      }
-
-      // Check if level is already taken by another role
-      const existingRoleWithLevel = roles.find(r => r.level === selectedLevel.order.toString() && r.id !== selectedRole?.id)
-      if (existingRoleWithLevel) {
-        toast.error(`Level "${selectedLevel.name}" is already assigned to role "${existingRoleWithLevel.name}"`)
         return
       }
 
@@ -128,7 +113,7 @@ const RoleManagementPage = () => {
         await roleService.updateRole(selectedRole.id, {
           name: formData.name,
           description: formData.description,
-          level: selectedLevel.order.toString()
+          status: formData.status ? 'active' : 'inactive'
         })
         toast.success('Role updated successfully')
       } else {
@@ -139,8 +124,8 @@ const RoleManagementPage = () => {
           isSystem: false,
           permissions: [],
           guid: '', // This will be overwritten by roleService with a generated GUID
-          status: 'active',
-          level: selectedLevel.order.toString()
+          status: formData.status ? 'active' : 'inactive',
+          level: '1' // Default level
         })
         toast.success('Role created successfully')
       }
@@ -208,22 +193,17 @@ const RoleManagementPage = () => {
                 required
                 sx={{ mb: 4 }}
               />
-              <FormControl fullWidth sx={{ mb: 4 }}>
-                <InputLabel>Approval Level</InputLabel>
-                <Select
-                  value={formData.level}
-                  label="Approval Level"
-                  onChange={(e) => setFormData({ ...formData, level: e.target.value })}
-                  disabled={submitting || levelsLoading}
-                  required
-                >
-                  {levels.map((level) => (
-                    <MenuItem key={level.id} value={level.id}>
-                      {level.name} (Order: {level.order})
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.checked })}
+                    disabled={submitting}
+                  />
+                }
+                label="Status (Active/Inactive)"
+                sx={{ mb: 2 }}
+              />
             </Box>
           </DialogContent>
           <DialogActions>
@@ -236,7 +216,7 @@ const RoleManagementPage = () => {
             <Button 
               variant="contained" 
               onClick={handleSubmit}
-              disabled={submitting || !formData.name || !formData.description || !formData.level || levelsLoading}
+              disabled={submitting || !formData.name || !formData.description}
             >
               {submitting ? 'Saving...' : selectedRole ? 'Update Role' : 'Add Role'}
             </Button>
