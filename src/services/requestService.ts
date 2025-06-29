@@ -427,6 +427,54 @@ const requestService = {
       console.error('Error updating request form:', error)
       throw new Error(`Failed to update request form: ${error}`)
     }
+  },
+
+  async submitRequest(
+    data: RequestFormM,
+    type: 'APPROVED' | 'REVISED' | 'REJECTED',
+    username: string
+  ) {
+    try {
+      // Recursively remove undefined values
+      const removeUndefined = (obj: any): any => {
+        if (obj === null || obj === undefined) return null
+        if (Array.isArray(obj)) {
+          return obj.map(removeUndefined).filter(item => item !== null)
+        }
+        if (typeof obj === 'object') {
+          const cleaned: any = {}
+          for (const [key, value] of Object.entries(obj)) {
+            if (value !== undefined) {
+              cleaned[key] = removeUndefined(value)
+            }
+          }
+          return cleaned
+        }
+        return obj
+      }
+
+      const cleanData = removeUndefined(data) as RequestFormM
+
+      const updatedRequest: RequestFormM = {
+        ...cleanData,
+        approvals: [
+          ...(data.approvals || []),
+          {
+            nama: username ?? '-',
+            tanggal: Timestamp.now(),
+            status: type,
+            isFinalStatus: type === 'APPROVED',
+          },
+        ],
+        dtUpdated: Timestamp.now(),
+      }
+
+      await setDoc(doc(db, 'requests', data.id), updatedRequest)
+
+      return { success: true, message: `Request ${type.toLowerCase()} successfully.` }
+    } catch (error: any) {
+      return { success: false, message: error.message || 'Something went wrong.' }
+    }
   }
 }
 

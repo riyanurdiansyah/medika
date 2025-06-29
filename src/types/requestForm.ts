@@ -14,7 +14,7 @@ export interface ItemM {
 export interface ApprovalM {
   nama: string
   tanggal: Timestamp
-  status: 'pending' | 'approved' | 'rejected' | 'REVISED'
+  status: string
   isFinalStatus: boolean
 }
 

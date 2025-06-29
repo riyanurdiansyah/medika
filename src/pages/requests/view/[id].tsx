@@ -10,7 +10,8 @@ import {
   Chip,
   CircularProgress,
   Alert,
-  Paper
+  Paper,
+  Button
 } from '@mui/material'
 import { format } from 'date-fns'
 import { Request, RequestStatus } from 'src/types/request'
@@ -135,15 +136,59 @@ const RequestFormView = () => {
   // Check if user can approve this request
   const isApproval = user?.role === 'Supervisor' || user?.role === 'Manager' || user?.role === 'Deputy Manager'
 
+  // Check if request is rejected
+  const isRejected = request.approvals.length > 0 && 
+    request.approvals[request.approvals.length - 1].status === 'rejected'
+
+  const handleRevise = () => {
+    router.push('/requests/edit/' + request.id)
+  }
+
   return (
-    <RequestFormDetailView
-      data={request}
-      isApproval={isApproval}
-      onApprove={handleApprove}
-      onReject={handleReject}
-      onBack={handleBack}
-      onRefresh={handleRefresh}
-    />
+    <Box>
+      {/* Revise Button for Rejected Requests */}
+      {isRejected && (
+        <Card sx={{ 
+          mb: 3, 
+          border: '2px dashed', 
+          borderColor: 'warning.main', 
+          bgcolor: 'warning.lighter' 
+        }}>
+          <CardContent sx={{ p: 3, textAlign: 'center' }}>
+            <Typography variant="h6" sx={{ mb: 2, color: 'warning.main' }}>
+              Request Rejected - Ready for Revision
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
+              This request has been rejected. Click the button below to edit and submit a revision.
+            </Typography>
+            <Button
+              variant="contained"
+              size="large"
+              onClick={handleRevise}
+              startIcon={<Icon icon="tabler:edit" />}
+              sx={{
+                bgcolor: 'warning.main',
+                '&:hover': { bgcolor: 'warning.dark' },
+                py: 1.5,
+                px: 4,
+                fontWeight: 600
+              }}
+            >
+              Edit & Revise Request
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      <RequestFormDetailView
+        data={request}
+        isApproval={isApproval}
+        onApprove={handleApprove}
+        onReject={handleReject}
+        onBack={handleBack}
+        onRefresh={handleRefresh}
+      />
+    </Box>
   )
 }
 

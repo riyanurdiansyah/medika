@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   Box,
   Card,
@@ -14,7 +14,9 @@ import {
   Avatar,
   Badge,
   LinearProgress,
-  Tooltip
+  Tooltip,
+  Snackbar,
+  Alert
 } from '@mui/material'
 import { format } from 'date-fns'
 import { Timestamp } from 'firebase/firestore'
@@ -22,6 +24,7 @@ import { RequestFormM } from 'src/types/requestForm'
 import Icon from 'src/@core/components/icon'
 import { useAuth } from 'src/hooks/useAuth'
 import { useRouter } from 'next/router'
+import { requestService } from 'src/services/requestService'
 
 interface RequestFormDetailViewProps {
   data: RequestFormM
@@ -42,6 +45,7 @@ const RequestFormDetailView: React.FC<RequestFormDetailViewProps> = ({
 }) => {
   const { user } = useAuth()
   const router = useRouter()
+  const [openSnackbar, setOpenSnackbar] = useState(false)
   
   // Helper functions
   const formatDate = (ts?: Timestamp): string => {
@@ -61,6 +65,20 @@ const RequestFormDetailView: React.FC<RequestFormDetailViewProps> = ({
       case 'pending': return 'warning'
       case 'REVISED': return 'info'
       default: return 'default'
+    }
+  }
+
+  const handleSubmit = async (type: 'APPROVED' | 'REJECTED' | 'REVISED') => {
+    try {
+      const res = await requestService.submitRequest(data, type, user?.username ?? '-')
+
+      if (res.success) {
+        setOpenSnackbar(true)
+      } else {
+        alert('Error: ' + (res.message || 'Gagal submit'))
+      }
+    } catch (error: any) {
+      alert('Error saat submit: ' + error.message || error)
     }
   }
 
@@ -462,6 +480,51 @@ const RequestFormDetailView: React.FC<RequestFormDetailViewProps> = ({
                 <InfoCard title="Approval History" icon="tabler:timeline" color="success">
                   <ApprovalTimeline approvals={data.approvals} />
                 </InfoCard>
+              )}
+
+              {(data.approvals.length === 0 || !data.approvals[data.approvals.length - 1]?.isFinalStatus) && (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    fullWidth
+                    onClick={() => router.push('/requests/edit/' + data.id)}
+                  >
+                    REJECT
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    onClick={async () => {
+                      await handleSubmit("APPROVED")
+                    }}
+                  >
+                    APPROVE
+                  </Button>
+                  <Snackbar
+                      open={openSnackbar}
+                      autoHideDuration={6000}
+                      onClose={() => setOpenSnackbar(false)}
+                      anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                    >
+                      <Alert
+                        onClose={() => setOpenSnackbar(false)}
+                        severity="success"
+                        action={
+                          <Button
+                            color="inherit"
+                            size="small"
+                            onClick={() => router.reload()}
+                          >
+                            REFRESH
+                          </Button>
+                        }
+                        sx={{ width: '100%' }}
+                      >
+                        Request berhasil disetujui!
+                      </Alert>
+                    </Snackbar>
+                </Box>
               )}
 
               {/* Approval Actions */}
