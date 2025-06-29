@@ -3,24 +3,15 @@ import { useRouter } from 'next/router'
 import {
   Card,
   CardContent,
-  Grid,
   Typography,
-  Divider,
   Box,
-  Chip,
   CircularProgress,
   Alert,
-  Paper,
   Button
 } from '@mui/material'
-import { format } from 'date-fns'
-import { Request, RequestStatus } from 'src/types/request'
-import { requestService } from 'src/services/requestService'
-import { userService } from 'src/services/userService'
-import PageHeader from 'src/@core/components/page-header'
-import { UserData } from 'src/types/user'
-import Icon from 'src/@core/components/icon'
 import { RequestFormM } from 'src/types/requestForm'
+import { requestService } from 'src/services/requestService'
+import Icon from 'src/@core/components/icon'
 import { useAuth } from 'src/hooks/useAuth'
 import RequestFormDetailView from 'src/components/requests/RequestFormDetailView'
 import { toast } from 'react-hot-toast'
@@ -67,7 +58,9 @@ const RequestFormView = () => {
   }
 
   const handleApprove = async () => {
-    if (!request || !user) return
+    if (!request || !user) {
+      return
+    }
 
     try {
       // Implement approval logic here
@@ -80,7 +73,9 @@ const RequestFormView = () => {
   }
 
   const handleReject = async () => {
-    if (!request || !user) return
+    if (!request || !user) {
+      return
+    }
 
     try {
       // Implement rejection logic here
@@ -93,7 +88,9 @@ const RequestFormView = () => {
   }
 
   const handleRefresh = async () => {
-    if (!id || typeof id !== 'string' || !user) return
+    if (!id || typeof id !== 'string' || !user) {
+      return
+    }
 
     try {
       setLoading(true)

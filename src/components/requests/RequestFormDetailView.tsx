@@ -49,12 +49,18 @@ const RequestFormDetailView: React.FC<RequestFormDetailViewProps> = ({
   
   // Helper functions
   const formatDate = (ts?: Timestamp): string => {
-    if (!ts) return "-"
+    if (!ts) {
+      return "-"
+    }
+
     return format(ts.toDate(), 'dd MMM yyyy')
   }
 
   const formatDateWithTime = (ts?: Timestamp): string => {
-    if (!ts) return "-"
+    if (!ts) {
+      return "-"
+    }
+
     return format(ts.toDate(), 'dd MMM yyyy HH:mm:ss')
   }
 

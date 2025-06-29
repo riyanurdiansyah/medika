@@ -38,5 +38,13 @@ export const useApprovalLevels = () => {
     fetchLevels()
   }, [])
 
-  return { levels, loading, error }
+  // Get roles that are at a higher level than the given role
+  const getHigherLevelRoles = (currentRole: string): string[] => {
+    const currentLevel = levels.find(level => level.name === currentRole)?.level || 0
+    return levels
+      .filter(level => level.level > currentLevel)
+      .map(level => level.name)
+  }
+
+  return { levels, loading, error, getHigherLevelRoles }
 } 

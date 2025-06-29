@@ -10,7 +10,7 @@ export const createUserInFirestore = async (
     await setDoc(doc(db, 'users', uid), {
       ...userData,
       role: userData.role || 'client', // Default role
-      fullName: userData.fullName || '',
+      fullname: userData.fullname || '',
       username: userData.username || '',
       avatar: userData.avatar || null
     })

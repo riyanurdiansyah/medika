@@ -3,7 +3,7 @@ export interface UserData {
   email: string
   fullname: string
   username?: string
-  avatar?: string | null
+  avatar: string | null
   role: string
   status: 'active' | 'inactive'
   directSuperior?: string

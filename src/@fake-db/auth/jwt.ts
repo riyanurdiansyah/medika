@@ -12,18 +12,18 @@ import { UserDataType } from 'src/context/types'
 
 const users: UserDataType[] = [
   {
-    id: 1,
+    id: '1',
     role: 'admin',
     password: 'admin',
-    fullName: 'John Doe',
+    fullname: 'John Doe',
     username: 'johndoe',
     email: 'admin@vuexy.com'
   },
   {
-    id: 2,
+    id: '2',
     role: 'client',
     password: 'client',
-    fullName: 'Jane Doe',
+    fullname: 'Jane Doe',
     username: 'janedoe',
     email: 'client@vuexy.com'
   }
@@ -79,15 +79,15 @@ mock.onPost('/jwt/register').reply(request => {
       const { length } = users
       let lastIndex = 0
       if (length) {
-        lastIndex = users[length - 1].id
+        lastIndex = parseInt(users[length - 1].id)
       }
       const userData = {
-        id: lastIndex + 1,
+        id: (lastIndex + 1).toString(),
         email,
         password,
         username,
         avatar: null,
-        fullName: '',
+        fullname: '',
         role: 'admin'
       }
 

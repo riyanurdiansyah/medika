@@ -67,22 +67,10 @@ const OfferForm = ({ open, onClose, onSubmit }: OfferFormProps) => {
         return
       }
 
-      // Create approval steps based on workflow
-      const approvalSteps = approvalWorkflow.map(step => ({
-        ...step,
-        status: 'pending' as const,
-        approvedBy: undefined,
-        approvedAt: undefined,
-        comments: undefined
-      }))
-
       await productOfferService.createOffer({
         ...formData,
-        submittedBy: user?.id || '',
-        submittedAt: new Date(),
-        status: 'pending',
-        currentApprovalStep: 0,
-        approvalSteps
+        submitterId: user?.id || '',
+        submitterName: user?.fullname || user?.username || ''
       })
 
       toast.success('Offer submitted successfully')

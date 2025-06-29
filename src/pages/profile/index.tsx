@@ -52,9 +52,8 @@ const ProfilePage = () => {
     id: user.id,
     email: user.email,
     fullname: user.fullname,
-    displayName: user.fullname,
     username: user.username || '',
-    avatar: user.avatar || null,
+    avatar: typeof user.avatar === 'string' ? user.avatar : null,
     role: user.role,
     status: 'active'
   }
@@ -96,10 +95,10 @@ const ProfilePage = () => {
               <Divider sx={{ my: 4 }} />
 
               <Box>
-                <InfoRow label='Username' value={userData.username} />
-                <InfoRow label='Email' value={userData.email} />
-                <InfoRow label='Full Name' value={userData.fullname} />
-                <InfoRow label='Role' value={userData.role} />
+                <InfoRow label='Username' value={userData.username ?? null} />
+                <InfoRow label='Email' value={userData.email ?? null} />
+                <InfoRow label='Full Name' value={userData.fullname ?? null} />
+                <InfoRow label='Role' value={userData.role ?? null} />
               </Box>
             </CardContent>
           </Card>
