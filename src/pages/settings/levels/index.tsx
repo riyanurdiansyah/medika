@@ -230,7 +230,7 @@ const LevelManagementPage = () => {
               loading={loading}
               autoHeight
               pagination
-              disableRowSelectionOnClick
+              disableRowSelectionOnClick 
               initialState={{
                 pagination: {
                   paginationModel: { pageSize: 10 }

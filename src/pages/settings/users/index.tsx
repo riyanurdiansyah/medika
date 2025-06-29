@@ -131,7 +131,7 @@ const UserManagementPage = () => {
       minWidth: 150 
     },
     { 
-      field: 'fullName', 
+      field: 'fullname', 
       headerName: 'Full Name', 
       flex: 2,
       minWidth: 200 

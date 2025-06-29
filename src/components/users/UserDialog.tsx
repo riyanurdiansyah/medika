@@ -54,7 +54,7 @@ const UserDialog = ({ open, onClose, onSubmit, initialData, mode }: UserDialogPr
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const { users } = useUsers()
-  const [approvalLevels, setApprovalLevels] = useState<{ level: number, role: string }[]>([])
+  const [levels, setLevels] = useState<{ id: string, name: string, order: number }[]>([])
 
   useEffect(() => {
     if (initialData) {
@@ -97,22 +97,26 @@ const UserDialog = ({ open, onClose, onSubmit, initialData, mode }: UserDialogPr
     }
   }, [open])
 
-  // Fetch approval levels from Firestore
+  // Fetch levels from Firestore
   useEffect(() => {
-    const fetchApprovalLevels = async () => {
+    const fetchLevels = async () => {
       try {
-        const approvalSettingsRef = doc(db, 'settings', 'approvalFlow')
-        const approvalSettingsDoc = await getDoc(approvalSettingsRef)
+        const levelsRef = collection(db, 'approvalLevels')
+        const snapshot = await getDocs(levelsRef)
+        const levelsList = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as { id: string, name: string, order: number }[]
         
-        if (approvalSettingsDoc.exists()) {
-          setApprovalLevels(approvalSettingsDoc.data().levels)
-        }
+        // Sort by order
+        levelsList.sort((a, b) => a.order - b.order)
+        setLevels(levelsList)
       } catch (error) {
-        console.error('Error fetching approval levels:', error)
+        console.error('Error fetching levels:', error)
       }
     }
 
-    fetchApprovalLevels()
+    fetchLevels()
   }, [])
 
   const handleChange = (field: keyof UserFormData) => (event: any) => {
@@ -132,27 +136,11 @@ const UserDialog = ({ open, onClose, onSubmit, initialData, mode }: UserDialogPr
     return null
   }
 
-  // Get eligible superiors based on approval levels
+  // Get eligible superiors - show all users except current one
   const getEligibleSuperiors = () => {
-    // Get selected role's level from approval hierarchy
-    const selectedRoleLevel = approvalLevels.find(
-      level => level.role.toLowerCase() === formData.role.toLowerCase()
-    )?.level || 0
-
-    // Filter users with higher level roles than the selected role
+    // Return all users except the current one being edited
     return users
-      .filter((user: UserData) => {
-        // Don't show the current user being edited
-        if (user.id === formData.id) return false
-        
-        // Get the user's role level from approval hierarchy
-        const userRoleLevel = approvalLevels.find(
-          level => level.role.toLowerCase() === user.role.toLowerCase()
-        )?.level || 0
-
-        // Only show users with higher level than the selected role
-        return userRoleLevel > selectedRoleLevel
-      })
+      .filter(user => user.id !== formData.id)
       .sort((a, b) => a.fullname.localeCompare(b.fullname))
   }
 
