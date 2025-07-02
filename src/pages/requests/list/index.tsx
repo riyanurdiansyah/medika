@@ -19,7 +19,7 @@ const MyRequestsPage = () => {
   const { requests, loading, error, refreshRequests } = useRequestsByCreatedBy()
 
   const handleViewRequest = (requestId: string) => {
-    router.push(`/requests/view/${requestId}`)
+    router.push(`/requests/detail/${requestId}`)
   }
 
   const handleAddRequest = () => {

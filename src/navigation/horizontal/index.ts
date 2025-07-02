@@ -11,10 +11,10 @@ const navigation = (): HorizontalNavItemsType => {
           title: 'My Requests',
           path: '/requests/list'
         },
-        {
-          title: 'Submit Request',
-          path: '/requests/submit'
-        },
+        // {
+        //   title: 'Submit Request',
+        //   path: '/requests/submit'
+        // },
         {
           title: 'Approvals',
           path: '/requests/approvals'

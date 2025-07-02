@@ -14,6 +14,7 @@ import {
 import { db } from 'src/configs/firebase'
 import { Request, RequestType, RequestStatus, ApprovalStatus, ApprovalHistoryEntry } from 'src/types/request'
 import { RequestFormM, createRequestFormMFromJson } from 'src/types/requestForm'
+import { UserData } from 'src/types/user'
 import { generateGUID } from 'src/utils/guid'
 
 export interface CreateRequestData {
@@ -474,6 +475,66 @@ const requestService = {
       return { success: true, message: `Request ${type.toLowerCase()} successfully.` }
     } catch (error: any) {
       return { success: false, message: error.message || 'Something went wrong.' }
+    }
+  },
+
+  // Flutter-style getRequests function for approvals
+  async getRequestsForApprovals(currentUserId: string, users: UserData[]): Promise<RequestFormM[]> {
+    try {
+      const usernames = users.map((u) => u.username).filter(Boolean) as string[]
+
+      if (usernames.length === 0) {
+        return []
+      }
+
+      // Get requests where createdBy is in the usernames list
+      const requestsCollection = collection(db, 'requests')
+      const q = query(
+        requestsCollection,
+        where('createdBy', 'in', usernames)
+      )
+      
+      const response = await getDocs(q)
+      const allRequests = response.docs.map((doc) => {
+        const data = doc.data()
+        return createRequestFormMFromJson({
+          id: doc.id,
+          ...data
+        })
+      })
+
+      // Filter requests based on approval logic
+      const filteredRequests = allRequests.filter((request: RequestFormM) => {
+        const approvals = request.approvals
+
+        // 1. If approvals is empty → take it
+        if (approvals.length === 0) {
+          const userRequestor = users.find((x) => x.username === request.createdBy)
+          if (!userRequestor) return false
+          return userRequestor.directSuperior === currentUserId
+        }
+
+        const lastApproval = approvals[approvals.length - 1]
+
+        // 2. If REJECTED → discard
+        if (lastApproval.status === 'REJECTED') return false
+
+        // 3. If final status → discard
+        if (lastApproval.isFinalStatus) return false
+
+        // 4. Check if directSuperior matches
+        const lastUsername = lastApproval.nama
+        const user = users.find((u) => u.username === lastUsername)
+
+        if (!user) return false
+
+        return user.directSuperior === currentUserId
+      })
+
+      return filteredRequests
+    } catch (error) {
+      console.error('Failed to get requests for approvals:', error)
+      throw new Error(`Failed to get requests for approvals: ${error}`)
     }
   }
 }
