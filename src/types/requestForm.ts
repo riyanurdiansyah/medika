@@ -3,11 +3,10 @@ import { Timestamp } from 'firebase/firestore'
 // ItemM equivalent
 export interface ItemM {
   id: string
-  name: string
-  quantity: number
-  unit: string
-  price?: number
-  description?: string
+  namaItem: string
+  jumlah: number
+  satuan: string
+  status?: string
 }
 
 // ApprovalM equivalent
@@ -16,6 +15,7 @@ export interface ApprovalM {
   tanggal: Timestamp
   status: string
   isFinalStatus: boolean
+  signature?: string
 }
 
 // RequestFormM equivalent - converted from Flutter
@@ -102,11 +102,10 @@ export const createRequestFormMFromJson = (json: any): RequestFormM => {
 export const createItemMFromJson = (json: any): ItemM => {
   return {
     id: json['id'] ?? '',
-    name: json['name'] ?? '',
-    quantity: json['quantity'] ?? 0,
-    unit: json['unit'] ?? '',
-    price: json['price'],
-    description: json['description']
+    namaItem: json['namaItem'] ?? '',
+    jumlah: json['jumlah'] ?? 0,
+    satuan: json['satuan'] ?? '',
+    status: json['status']
   }
 }
 
@@ -116,7 +115,8 @@ export const createApprovalMFromJson = (json: any): ApprovalM => {
     nama: json['nama'] ?? '',
     tanggal: json['tanggal'],
     status: json['status'] ?? 'pending',
-    isFinalStatus: json['isFinalStatus'] ?? false
+    isFinalStatus: json['isFinalStatus'] ?? false,
+    signature: json['signature']
   }
 }
 
@@ -165,11 +165,10 @@ export const requestFormMToJson = (requestForm: RequestFormM): any => {
 export const itemMToJson = (item: ItemM): any => {
   return {
     'id': item.id,
-    'name': item.name,
-    'quantity': item.quantity,
-    'unit': item.unit,
-    'price': item.price,
-    'description': item.description
+    'namaItem': item.namaItem,
+    'jumlah': item.jumlah,
+    'satuan': item.satuan,
+    'status': item.status
   }
 }
 
@@ -178,6 +177,7 @@ export const approvalMToJson = (approval: ApprovalM): any => {
     'nama': approval.nama,
     'tanggal': approval.tanggal,
     'status': approval.status,
-    'isFinalStatus': approval.isFinalStatus
+    'isFinalStatus': approval.isFinalStatus,
+    'signature': approval.signature
   }
 } 

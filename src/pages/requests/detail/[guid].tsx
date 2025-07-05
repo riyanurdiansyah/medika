@@ -16,6 +16,7 @@ import Icon from 'src/@core/components/icon'
 import { useAuth } from 'src/hooks/useAuth'
 import BasicInfoRequestForm from 'src/components/requests/BasicInfoRequestForm'
 import { toast } from 'react-hot-toast'
+import { exportTrialReport } from 'src/utils/exportTrialReport'
 
 const RequestDetailPage = () => {
   const router = useRouter()
@@ -131,6 +132,12 @@ const RequestDetailPage = () => {
     } catch (err) {
       console.error('Error rejecting request:', err)
       toast.error('Failed to reject request')
+    }
+  }
+
+  const handleGenerateReport = async () => {
+    if (request) {
+      await exportTrialReport(request)
     }
   }
 
@@ -259,6 +266,17 @@ const RequestDetailPage = () => {
                 Reject
               </Button>
             </>
+          )}
+          
+          {request && (
+            <Button
+              variant="outlined"
+              color="success"
+              onClick={handleGenerateReport}
+              startIcon={<Icon icon="tabler:file-spreadsheet" />}
+            >
+              Generate Report
+            </Button>
           )}
         </Box>
       </Box>
