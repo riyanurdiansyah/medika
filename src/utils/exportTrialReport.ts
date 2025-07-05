@@ -4,7 +4,7 @@ import { RequestFormM } from 'src/types/requestForm'
 
 function toDateOrDash(value?: any): Date | string {
   if (value && typeof value.toDate === 'function') return value.toDate()
-  return ': -'
+  return '-'
 }
 
 
@@ -42,11 +42,6 @@ export async function exportTrialReport(request: RequestFormM) {
   sheet.mergeCells('A15:B15')
   sheet.mergeCells('A16:B16')
   sheet.mergeCells('A17:B17')
-  sheet.mergeCells('A32:G32')
-  sheet.mergeCells('A33:G33')
-  sheet.mergeCells('A34:G34')
-  sheet.mergeCells('A35:G35')
-  sheet.mergeCells('A36:G36')
 
   sheet.mergeCells('A18:G18')
 
@@ -111,7 +106,7 @@ export async function exportTrialReport(request: RequestFormM) {
 
   // === INFORMASI RS ===
   setCell('A6', 'Nama RS/Lab')
-  setCell('C6', `: ${request.namaRS || '-'}`, true, 9)
+  setCell('C6', `  ${request.namaRS || '-'}`, true, 9)
 
   setCell('F6', 'Tgl Pengajuan Form')
   const cellG6 = sheet.getCell('G6')
@@ -121,36 +116,36 @@ export async function exportTrialReport(request: RequestFormM) {
   cellG6.alignment = { vertical: 'middle', horizontal: 'left' }
 
   setCell('A7', 'Alamat')
-  setCell('C7', `: ${request.alamat || '-'}`, true, 9)
+  setCell('C7', `  ${request.alamat || '-'}`, true, 9)
   setCell('F7', 'Alat')
-  setCell('G7', `: ${request.alat || '-'}`, true, 9)
+  setCell('G7', `  ${request.alat || '-'}`, true, 9)
 
   setCell('A8', 'No Telepon')
-  setCell('C8', `: ${request.noTelepon || '-'}`, true, 9)
+  setCell('C8', `  ${request.noTelepon || '-'}`, true, 9)
   setCell('F8', 'Merk')
-  setCell('G8', `: ${request.merk || '-'}`, true, 9)
+  setCell('G8', `  ${request.merk || '-'}`, true, 9)
 
   setCell('A9', 'Kepala Laboratorium')
-  setCell('C9', `: ${request.namaKepalaLab || '-'}`, true, 9)
+  setCell('C9', `  ${request.namaKepalaLab || '-'}`, true, 9)
   setCell('F9', 'Serial Number')
-  setCell('G9', `: ${request.serialNumber || '-'}`, true, 9)
+  setCell('G9', `  ${request.serialNumber || '-'}`, true, 9)
 
   setCell('A10', 'Penanggung Jawab Alat')
-  setCell('C10', `: ${request.penanggungJawabAlat || '-'}`, true, 9)
+  setCell('C10', `  ${request.penanggungJawabAlat || '-'}`, true, 9)
   setCell('F10', 'No. SPK/Invoice')
-  setCell('G10', `: ${request.noInvoice || '-'}`, true, 9)
+  setCell('G10', `  ${request.noInvoice || '-'}`, true, 9)
 
   // === PIC ===
   setCell('A12', 'Business Representative Person')
-  setCell('C12', `: ${request.businessRepresentivePerson || '-'}`, true, 9)
+  setCell('C12', `  ${request.businessRepresentivePerson || '-'}`, true, 9)
   setCell('F12', 'Pra Instalasi (diisi bila diperlukan)', true, 10, 'left')
-  setCell('F13', `: ${request.praInstalasi || '-'}`, true, 9)
+  setCell('F13', `  ${request.praInstalasi || '-'}`, true, 9)
 
   setCell('A13', 'Technical Support')
-  setCell('C13', `: ${request.technicalSupport || '-'}`, true, 9)
+  setCell('C13', `  ${request.technicalSupport || '-'}`, true, 9)
 
   setCell('A14', 'Field Service Engineer')
-  setCell('C14', `: ${request.fieldServiceEngineer || '-'}`, true, 9)
+  setCell('C14', `  ${request.fieldServiceEngineer || '-'}`, true, 9)
 
   setCell('A15', 'Tanggal Permintaan Pemasangan')
   const c15 = sheet.getCell('C15')
@@ -323,21 +318,34 @@ export async function exportTrialReport(request: RequestFormM) {
          }
        })
      }
-// === APPROVALS ===
-// === APPROVALS ===
+     
+  const uniqueApprovalsMap = new Map<string, RequestFormM['approvals'][number]>()
 
-// 1. Filter hanya APPROVED dan nama unik
-const uniqueApprovalsMap = new Map<string, RequestFormM['approvals'][number]>()
+  request.approvals?.forEach((approval) => {
+    if (
+      approval.status === 'APPROVED' &&
+      approval.nama &&
+      approval.signature // pastikan signature tidak kosong
+    ) {
+      const existing = uniqueApprovalsMap.get(approval.nama)
 
-request.approvals?.forEach((approval) => {
-  if (
-    approval.status === 'APPROVED' &&
-    approval.nama &&
-    !uniqueApprovalsMap.has(approval.nama)
-  ) {
-    uniqueApprovalsMap.set(approval.nama, approval)
-  }
-})
+      const currentDate =
+        typeof approval.tanggal?.toDate === 'function'
+          ? approval.tanggal.toDate()
+          : new Date(0)
+
+      const existingDate =
+        existing && typeof existing.tanggal?.toDate === 'function'
+          ? existing.tanggal.toDate()
+          : new Date(0)
+
+      // Simpan yang tanggalnya lebih baru
+      if (!existing || currentDate > existingDate) {
+        uniqueApprovalsMap.set(approval.nama, approval)
+      }
+    }
+  })
+
 
 // 2. Sort berdasarkan tanggal
 const approvals = Array.from(uniqueApprovalsMap.values()).sort((a, b) => {
@@ -397,16 +405,26 @@ if (approvals.length === 0) {
       sheet.getCell(sigRow, excelCol).value = '-'
     }
 
-    // === 3. Nama Approver
-    const nameCell = sheet.getCell(sigRow + 1, excelCol)
-    nameCell.value = approval.nama
+    const nameRow = sigRow + 1
+    sheet.getRow(nameRow).height = 20 // Tambah tinggi baris
+    const nameCell = sheet.getCell(nameRow, excelCol)
+    nameCell.value = `(${approval.nama})` || '(....)'
     nameCell.alignment = { vertical: 'middle', horizontal: 'center' }
+    nameCell.font = { size: 10 }
   }
 }
-  setCell('A32', 'Note :', true, 10, 'left')
-  setCell('A33', '- Tanpa Form ini, kelengkapan untuk Instalasi tidak dapat dikeluarkan oleh ADMIN', true, 10, 'left')
-  setCell('A34', '- Form ini diajukan minimal 1 minggu sebelum tanggal permintaan Instalasi / Uji Fungsi Alat', true, 10, 'left')
-  setCell('A35', '- Form ini tidak memerlukan tandatangan basah, dan SAH dengan persetujuan (OK) melalui Email', true, 10, 'left')
+  const approvalRowsUsed = approvals.length > 0 ? 3 : 1 // baris header + tanda tangan + nama
+  const noteStartRow = approvalSectionStartRow + approvalRowsUsed + 1
+
+  sheet.mergeCells(`A${noteStartRow}:G${noteStartRow}`)
+  sheet.mergeCells(`A${noteStartRow + 1}:G${noteStartRow + 1}`)
+  sheet.mergeCells(`A${noteStartRow + 2}:G${noteStartRow + 2}`)
+  sheet.mergeCells(`A${noteStartRow + 3}:G${noteStartRow + 3}`)
+
+  setCell(`A${noteStartRow}`, 'Note :', true, 10, 'left')
+  setCell(`A${noteStartRow + 1}`, '- Tanpa Form ini, kelengkapan untuk Instalasi tidak dapat dikeluarkan oleh ADMIN', true, 10, 'left')
+  setCell(`A${noteStartRow + 2}`, '- Form ini diajukan minimal 1 minggu sebelum tanggal permintaan Instalasi / Uji Fungsi Alat', true, 10, 'left')
+  setCell(`A${noteStartRow + 3}`, '- Form ini tidak memerlukan tandatangan basah, dan SAH dengan persetujuan (OK) melalui Email', true, 10, 'left')
 
   // === SIMPAN FILE ===
   const buffer = await workbook.xlsx.writeBuffer()
