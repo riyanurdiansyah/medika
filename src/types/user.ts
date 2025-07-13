@@ -7,6 +7,7 @@ export interface UserData {
   role: string
   status: 'active' | 'inactive'
   directSuperior?: string
+  fcmToken?: string
   createdAt?: Date
   updatedAt?: Date
 }

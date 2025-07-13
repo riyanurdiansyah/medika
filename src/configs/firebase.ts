@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 import { getStorage } from 'firebase/storage'
+import { getMessaging, isSupported } from 'firebase/messaging'
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -23,5 +24,14 @@ export const db = getFirestore(app)
 
 // Initialize Firebase Storage and get a reference to the service
 export const storage = getStorage(app)
+
+// Initialize Firebase Cloud Messaging
+export const getMessagingInstance = async () => {
+  const isMessagingSupported = await isSupported()
+  if (isMessagingSupported) {
+    return getMessaging(app)
+  }
+  return null
+}
 
 export default app 

@@ -38,6 +38,16 @@ const navigation = (): HorizontalNavItemsType => {
           path: '/settings/levels'
         }
       ]
+    },
+    {
+      title: 'Notifications',
+      icon: 'tabler:bell',
+              children: [
+          {
+            title: 'Send FCM',
+            path: '/notifications/send'
+          }
+        ]
     }
   ]
 }

@@ -7,6 +7,12 @@ function toDateOrDash(value?: any): Date | string {
   return '-'
 }
 
+function autoHeight(row: ExcelJS.Row, text: string, lineLength = 50, lineHeight = 15) {
+  const lines = Math.ceil(text.length / lineLength)
+  row.height = lines * lineHeight
+}
+
+
 
 export async function exportTrialReport(request: RequestFormM) {
   const workbook = new ExcelJS.Workbook()
@@ -25,17 +31,17 @@ export async function exportTrialReport(request: RequestFormM) {
 
   // Merge cells
   sheet.mergeCells('A1:B4')
-  sheet.mergeCells('C1:G1')
-  sheet.mergeCells('C2:G2')
-  sheet.mergeCells('C3:D3')
-  sheet.mergeCells('C4:D4')
+sheet.mergeCells('C1:G1') 
+sheet.mergeCells('C2:G2') 
+sheet.mergeCells('C3:D3') 
+sheet.mergeCells('C4:D4') 
 
-  sheet.mergeCells('A5:B5')
-  sheet.mergeCells('A6:B6')
-  sheet.mergeCells('A7:B7')
-  sheet.mergeCells('A8:B8')
-  sheet.mergeCells('A9:B9')
-  sheet.mergeCells('A10:B10')
+sheet.mergeCells('A5:B5') 
+sheet.mergeCells('A6:B6') 
+sheet.mergeCells('A7:B7') 
+sheet.mergeCells('A8:B8') 
+sheet.mergeCells('A9:B9') 
+sheet.mergeCells('A10:B10') 
   sheet.mergeCells('A12:B12')
   sheet.mergeCells('A13:B13')
   sheet.mergeCells('A14:B14')
@@ -45,12 +51,12 @@ export async function exportTrialReport(request: RequestFormM) {
 
   sheet.mergeCells('A18:G18')
 
-  sheet.mergeCells('C5:D5')
-  sheet.mergeCells('C6:D6')
-  sheet.mergeCells('C7:D7')
-  sheet.mergeCells('C8:D8')
-  sheet.mergeCells('C9:D9')
-  sheet.mergeCells('C10:D10')
+sheet.mergeCells('C5:D5') 
+sheet.mergeCells('C6:D6') 
+sheet.mergeCells('C7:D7') 
+sheet.mergeCells('C8:D8') 
+sheet.mergeCells('C9:D9') 
+sheet.mergeCells('C10:D10') 
 
   sheet.mergeCells('F12:G12')
   sheet.mergeCells('F13:G17')
@@ -59,7 +65,7 @@ export async function exportTrialReport(request: RequestFormM) {
   const headerRows: number[] = [1, 2, 3, 4]
   headerRows.forEach(i => sheet.getRow(i).height = 20)
   sheet.getRow(5).height = 10
-  const infoRows: number[] = [6, 7, 8, 10]
+  const infoRows: number[] = [6, 8, 10]
   infoRows.forEach(i => sheet.getRow(i).height = 26)
 
   // Add logo
@@ -67,16 +73,16 @@ export async function exportTrialReport(request: RequestFormM) {
     const imageUrl = 'https://firebasestorage.googleapis.com/v0/b/e-recruitment-59a9b.appspot.com/o/logo.png?alt=media&token=0304d2e2-f0ca-4dfb-9798-17ae4c7f8c0a'
     const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(imageUrl)}`
     const response = await fetch(proxyUrl)
-    const imageBuffer = await response.arrayBuffer()
+  const imageBuffer = await response.arrayBuffer()
 
     const imageId = workbook.addImage({ buffer: imageBuffer, extension: 'png' })
 
-    sheet.addImage(imageId, {
+  sheet.addImage(imageId, {
       tl: { col: 0.99999, row: 0.15 },  // geser ke kanan & agak turun dikit biar tengah cell
       ext: { width: 235, height: 100 },
-    })
+  })
     
-  } catch (err) {
+} catch (err) {
     console.warn('Failed to load image:', err)
   }
 
@@ -116,7 +122,14 @@ export async function exportTrialReport(request: RequestFormM) {
   cellG6.alignment = { vertical: 'middle', horizontal: 'left' }
 
   setCell('A7', 'Alamat')
-  setCell('C7', `  ${request.alamat || '-'}`, true, 9)
+  setCell('C7', `  ${request.alamat}`, true, 9, 'left')
+  autoHeight(sheet.getRow(7), request.alamat)
+  sheet.getCell('C7').alignment = {
+    vertical: 'middle',
+    horizontal: 'left',
+    wrapText: true, // ⬅️ ini yang bikin teks bisa turun ke bawah
+  }
+
   setCell('F7', 'Alat')
   setCell('G7', `  ${request.alat || '-'}`, true, 9)
 
@@ -401,7 +414,7 @@ if (approvals.length === 0) {
         console.warn(`Gagal load signature untuk: ${approval.nama}`, err)
         sheet.getCell(sigRow, excelCol).value = '(TTD gagal)'
       }
-    } else {
+} else {
       sheet.getCell(sigRow, excelCol).value = '-'
     }
 
@@ -429,4 +442,4 @@ if (approvals.length === 0) {
   // === SIMPAN FILE ===
   const buffer = await workbook.xlsx.writeBuffer()
   saveAs(new Blob([buffer]), `Trial_Report_${request.noDokumen || 'export'}.xlsx`)
-}
+} 

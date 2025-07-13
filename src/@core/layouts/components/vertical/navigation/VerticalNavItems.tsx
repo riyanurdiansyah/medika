@@ -34,8 +34,9 @@ const VerticalNavItems = (props: Props) => {
 
   const RenderMenuItems = verticalNavItems?.map((item: NavGroup | NavLink | NavSectionTitle, index: number) => {
     const TagName: any = resolveNavItemComponent(item)
+    const key = (item as NavLink).path || (item as NavGroup).title || (item as NavSectionTitle).sectionTitle || index
 
-    return <TagName {...props} key={index} item={item} />
+    return <TagName {...props} key={key} item={item} />
   })
 
   return <>{RenderMenuItems}</>

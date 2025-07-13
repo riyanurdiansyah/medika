@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, getDocs } from 'firebase/firestore'
-import { db } from 'src/configs/firebase'
+import { userService } from 'src/services/userService'
 import { UserData } from 'src/types/user'
 
 export const useUsers = () => {
@@ -8,17 +7,12 @@ export const useUsers = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchUsers = async () => {
+  const refreshUsers = async () => {
     try {
       setLoading(true)
-      const usersCollection = collection(db, 'users')
-      const usersSnapshot = await getDocs(usersCollection)
-      const usersList = usersSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as UserData[]
-      setUsers(usersList)
       setError(null)
+      const usersData = await userService.getAllUsers()
+      setUsers(usersData)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch users')
     } finally {
@@ -26,9 +20,19 @@ export const useUsers = () => {
     }
   }
 
+  const getUsersWithFCMTokens = () => {
+    return users.filter(user => user.fcmToken && user.status === 'active')
+  }
+
   useEffect(() => {
-    fetchUsers()
+    refreshUsers()
   }, [])
 
-  return { users, loading, error, refreshUsers: fetchUsers }
+  return {
+    users,
+    usersWithFCMTokens: getUsersWithFCMTokens(),
+    loading,
+    error,
+    refreshUsers
+  }
 } 

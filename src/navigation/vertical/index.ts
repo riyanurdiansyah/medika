@@ -40,11 +40,22 @@ const navigation = (): VerticalNavItemsType => {
       ]
     },
     {
-      title: 'Profile',
-      icon: 'tabler:user-circle',
-      path: '/profile',
-      badgeContent: 'Me',
-      badgeColor: 'primary'
+      title: 'Notifications',
+      icon: 'tabler:bell',
+      children: [
+        {
+          title: 'Send FCM',
+          path: '/notifications/send'
+        },
+        {
+          title: 'Notification History',
+          path: '/notifications/history'
+        },
+        {
+          title: 'Topic Management',
+          path: '/notifications/topics'
+        }
+      ]
     }
   ]
 }

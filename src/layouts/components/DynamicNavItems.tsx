@@ -1,5 +1,5 @@
 // ** React Imports
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 
 // ** Type Imports
 import { NavLink, VerticalNavItemsType } from 'src/@core/layouts/types'
@@ -28,33 +28,18 @@ const updateProfileBadge = (items: VerticalNavItemsType, role: string): Vertical
   })
 }
 
-const DynamicNavItems = () => {
-  const { user } = useAuth()
-  const [navItems, setNavItems] = useState<VerticalNavItemsType>(defaultNavigation())
-
-  useEffect(() => {
-    if (user?.role) {
-      const updatedNavigation = updateProfileBadge(defaultNavigation(), user.role)
-      setNavItems(updatedNavigation)
-    }
-  }, [user])
-
-  return navItems
-}
-
 const useDynamicNavigation = () => {
   const { user } = useAuth()
-  const [navItems, setNavItems] = useState<VerticalNavItemsType>(defaultNavigation())
-
-  useEffect(() => {
+  
+  const navItems = useMemo(() => {
     if (user?.role) {
-      const updatedNavigation = updateProfileBadge(defaultNavigation(), user.role)
-      setNavItems(updatedNavigation)
+      return updateProfileBadge(defaultNavigation(), user.role)
     }
-  }, [user])
+    return defaultNavigation()
+  }, [user?.role])
 
   return navItems
 }
 
 export { useDynamicNavigation }
-export default DynamicNavItems 
+export default useDynamicNavigation 
