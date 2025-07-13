@@ -134,20 +134,11 @@ const requestService = {
     } as Request
   },
 
-  async createRequest(data: CreateRequestData): Promise<string> {
+  async createRequest(data: any): Promise<string> {
     const guid = generateGUID()
     const requestDoc = doc(db, 'requests', guid)
     
-    await setDoc(requestDoc, {
-      ...data,
-      guid,
-      status: 'pending' as RequestStatus,
-      currentApprovalLevel: 1,
-      approvalHistory: [],
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-      createdBy: data.createdBy || data.requesterName
-    })
+    await setDoc(requestDoc, data)
 
     return guid
   },

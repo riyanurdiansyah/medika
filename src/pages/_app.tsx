@@ -62,6 +62,9 @@ import 'src/iconify-bundle/icons-bundle-react'
 
 // ** Global css styles
 import '../../styles/globals.css'
+import { LocalizationProvider } from '@mui/x-date-pickers'
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
+
 
 // ** Extend App Props with Emotion
 type ExtendedAppProps = AppProps & {
@@ -135,6 +138,7 @@ const App = (props: ExtendedAppProps) => {
             <SettingsConsumer>
               {({ settings }) => {
                 return (
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <ThemeComponent settings={settings}>
                     <Guard authGuard={authGuard} guestGuard={guestGuard}>
                       <AclGuard aclAbilities={aclAbilities} guestGuard={guestGuard} authGuard={authGuard}>
@@ -145,6 +149,8 @@ const App = (props: ExtendedAppProps) => {
                       <Toaster position={settings.toastPosition} toastOptions={{ className: 'react-hot-toast' }} />
                     </ReactHotToast>
                   </ThemeComponent>
+                </LocalizationProvider>
+                
                 )
               }}
             </SettingsConsumer>
