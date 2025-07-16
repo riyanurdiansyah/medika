@@ -352,11 +352,11 @@ const RequestFormDetailView: React.FC<RequestFormDetailViewProps> = ({
                                   <Icon icon="tabler:check" />
                                 </Box>
                                 <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                  {item.name}
+                                  {item.namaItem}
                                 </Typography>
                               </Box>
                               <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                                {item.quantity} {item.unit}
+                                {item.jumlah} {item.satuan}
                               </Typography>
                             </Paper>
                           </Grid>
@@ -384,11 +384,11 @@ const RequestFormDetailView: React.FC<RequestFormDetailViewProps> = ({
                                   <Icon icon="tabler:check" />
                                 </Box>
                                 <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                  {item.name}
+                                  {item.namaItem}
                                 </Typography>
                               </Box>
                               <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                                {item.quantity} {item.unit}
+                                {item.jumlah} {item.satuan}
                               </Typography>
                             </Paper>
                           </Grid>

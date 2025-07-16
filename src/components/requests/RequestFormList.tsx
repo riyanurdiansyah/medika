@@ -4,19 +4,37 @@ import { RequestFormM } from 'src/types/requestForm'
 import Icon from 'src/@core/components/icon'
 import { format } from 'date-fns'
 import { Timestamp } from 'firebase/firestore'
+import Dialog from '@mui/material/Dialog'
+import DialogContent from '@mui/material/DialogContent'
+import DialogTitle from '@mui/material/DialogTitle'
+import Radio from '@mui/material/Radio'
+import RadioGroup from '@mui/material/RadioGroup'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import Slide from '@mui/material/Slide'
+import { TransitionProps } from '@mui/material/transitions'
+import { useState } from 'react'
 
 interface RequestFormListProps {
   requests: RequestFormM[]
   loading: boolean
   userRole: string
   onViewRequest: (requestId: string) => void
-  onAddRequest: () => void
+  onAddRequest: (type?: string) => void
   onApproveRequest: (requestId: string) => void
   onRejectRequest: (requestId: string) => void
   onResubmitRequest?: (requestId: string) => void
 }
 
 type ChipColor = 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'
+
+const requestTypes = [
+  { label: 'General Request', value: 'general' },
+  { label: 'Training Request', value: 'training' }
+]
+
+const Transition = (props: TransitionProps & { children: React.ReactElement }) => (
+  <Slide direction="up" {...props} />
+)
 
 const RequestFormList = ({ 
   requests, 
@@ -215,7 +233,7 @@ const RequestFormList = ({
             <Button
               variant="contained"
               startIcon={<Icon icon="tabler:plus" />}
-              onClick={onAddRequest}
+              onClick={() => onAddRequest()}
             >
               New Request
             </Button>

@@ -153,34 +153,55 @@ const BasicInfoRequestForm: React.FC<BasicInfoRequestFormProps> = ({
     field: keyof RequestFormM,
     label: string,
     required: boolean = true
-  ) => (
-    <TextField
-      fullWidth
-      label={label}
-      type="date"
-      value={formData[field] ? format(new Date(formData[field] as any), 'yyyy-MM-dd') : ''}
-      onChange={(e) => handleInputChange(field, e.target.value)}
-      error={!!errors[field]}
-      helperText={errors[field]}
-      required={required}
-      InputLabelProps={{
-        shrink: true,
-      }}
-      sx={{
-        '& .MuiInputLabel-root': {
-          fontSize: '18px',
-          color: 'text.secondary'
-        },
-        '& .MuiInputBase-input': {
-          fontSize: '18px',
-          color: 'text.primary'
-        },
-        '& .MuiFormHelperText-root': {
-          fontSize: '14px'
+  ) => {
+    const getDateValue = (dateField: any) => {
+      if (!dateField) return ''
+      
+      try {
+        // Handle Firestore Timestamp
+        if (dateField && typeof dateField === 'object' && dateField.toDate) {
+          return format(dateField.toDate(), 'yyyy-MM-dd')
         }
-      }}
-    />
-  )
+        // Handle regular Date object or date string
+        if (dateField instanceof Date || typeof dateField === 'string') {
+          return format(new Date(dateField), 'yyyy-MM-dd')
+        }
+        return ''
+      } catch (error) {
+        console.error('Error formatting date:', error)
+        return ''
+      }
+    }
+
+    return (
+      <TextField
+        fullWidth
+        label={label}
+        type="date"
+        value={getDateValue(formData[field])}
+        onChange={(e) => handleInputChange(field, e.target.value)}
+        error={!!errors[field]}
+        helperText={errors[field]}
+        required={required}
+        InputLabelProps={{
+          shrink: true,
+        }}
+        sx={{
+          '& .MuiInputLabel-root': {
+            fontSize: '18px',
+            color: 'text.secondary'
+          },
+          '& .MuiInputBase-input': {
+            fontSize: '18px',
+            color: 'text.primary'
+          },
+          '& .MuiFormHelperText-root': {
+            fontSize: '14px'
+          }
+        }}
+      />
+    )
+  }
 
   return (
     <Box sx={{ 
