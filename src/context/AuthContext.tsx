@@ -50,6 +50,31 @@ const AuthProvider = ({ children }: Props) => {
     }
   }, [router])
 
+  // Initialize user from localStorage on mount
+  useEffect(() => {
+    const initializeUser = () => {
+      try {
+        const userData = window.localStorage.getItem('userData')
+        if (userData) {
+          const parsedUserData = JSON.parse(userData)
+          if (parsedUserData && parsedUserData.id) {
+            setUser(parsedUserData)
+          } else {
+            // Invalid data, remove it
+            window.localStorage.removeItem('userData')
+          }
+        }
+      } catch (error) {
+        console.error('Error parsing user data from localStorage:', error)
+        window.localStorage.removeItem('userData')
+      } finally {
+        setInitializing(false)
+      }
+    }
+
+    initializeUser()
+  }, [])
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       try {
@@ -59,11 +84,12 @@ const AuthProvider = ({ children }: Props) => {
           
           if (userDoc.exists()) {
             const userData = userDoc.data() as Omit<UserDataType, 'id' | 'email'>
-            setUser({
+            const user = {
               id: firebaseUser.uid,
               email: firebaseUser.email || '',
               ...userData
-            })
+            }
+            setUser(user)
           } else {
             // Handle case where user document doesn't exist
             console.error('User document not found in Firestore')
@@ -71,18 +97,14 @@ const AuthProvider = ({ children }: Props) => {
           }
         } else {
           setUser(null)
-          // Only redirect to login if we're not on login, register, or public pages
-          const publicPaths = ['/login', '/register', '/']
-          if (!publicPaths.includes(router.pathname)) {
-            router.replace('/login')
-          }
+          // Remove automatic redirect - let AuthGuard handle redirects
+          // This prevents the redirect loop
         }
       } catch (error) {
         console.error('Error fetching user data:', error)
         setUser(null)
       } finally {
         setLoading(false)
-        setInitializing(false)
       }
     })
 

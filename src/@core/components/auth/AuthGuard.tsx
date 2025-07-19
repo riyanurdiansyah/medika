@@ -23,7 +23,9 @@ const AuthGuard = (props: AuthGuardProps) => {
         return
       }
 
-      if (auth.user === null && !window.localStorage.getItem('userData')) {
+      // Only redirect if user is null and no localStorage data
+      // Also check if we're not already on login page to prevent loops
+      if (auth.user === null && !window.localStorage.getItem('userData') && router.pathname !== '/login') {
         if (router.asPath !== '/') {
           router.replace({
             pathname: '/login',
@@ -35,7 +37,7 @@ const AuthGuard = (props: AuthGuardProps) => {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [router.route]
+    [router.route, auth.user]
   )
 
   if (auth.loading || auth.user === null) {

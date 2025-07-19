@@ -22,12 +22,21 @@ const GuestGuard = (props: GuestGuardProps) => {
       return
     }
 
-    // Check localStorage only once on mount
+    // Only redirect if we have user data in localStorage and we're not already on a protected page
     const userData = window.localStorage.getItem('userData')
-    if (userData) {
-      router.replace('/')
+    if (userData && router.pathname === '/login') {
+      // Parse the user data to check if it's valid
+      try {
+        const parsedUserData = JSON.parse(userData)
+        if (parsedUserData && parsedUserData.id) {
+          router.replace('/')
+        }
+      } catch (error) {
+        // If localStorage data is invalid, remove it
+        window.localStorage.removeItem('userData')
+      }
     }
-  }, [router.isReady, router]) // Added router to dependency array
+  }, [router.isReady, router.pathname, router])
 
   if (auth.loading || (!auth.loading && auth.user !== null)) {
     return fallback
