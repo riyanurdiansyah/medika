@@ -61,7 +61,7 @@ interface FormState {
   items: FormItem[]
   accesories: FormItem[]
   approvals: ApprovalItem[]
-  category?: string // <-- add category field
+  type?: string // <-- renamed from category
 }
 
 interface RequestFormProps {
@@ -99,7 +99,7 @@ const RequestForm = ({ onSubmit, onCancel }: RequestFormProps) => {
     items: [],
     accesories: [],
     approvals: [],
-    category: '', // <-- initialize category
+    type: '', // <-- initialize type
   })
 
   const handleChange = (field: string, value: any) => {
@@ -108,13 +108,19 @@ const RequestForm = ({ onSubmit, onCancel }: RequestFormProps) => {
 
   const handleItemChange = (index: number, field: keyof FormItem, value: string | number) => {
     const newItems = [...form.items]
-    newItems[index] = { ...newItems[index], [field]: value }
+    newItems[index] = { 
+      ...newItems[index], 
+      [field]: field === 'jumlah' ? Number(value) : value 
+    }
     setForm(prev => ({ ...prev, items: newItems }))
   }
 
   const handleAccessoryChange = (index: number, field: keyof FormItem, value: string | number) => {
     const newAccessories = [...form.accesories]
-    newAccessories[index] = { ...newAccessories[index], [field]: value }
+    newAccessories[index] = { 
+      ...newAccessories[index], 
+      [field]: field === 'jumlah' ? Number(value) : value 
+    }
     setForm(prev => ({ ...prev, accesories: newAccessories }))
   }
 
@@ -181,7 +187,7 @@ const RequestForm = ({ onSubmit, onCancel }: RequestFormProps) => {
     { field: 'tanggalTraining', label: 'Tanggal Training' }
   ]
 
-  const categoryOptions = [
+  const typeOptions = [
     'Instalasi / Uji Fungsi Alat',
     'Training / Presentasi',
     'Sample',
@@ -199,12 +205,12 @@ const RequestForm = ({ onSubmit, onCancel }: RequestFormProps) => {
               <TextField
                 select
                 fullWidth
-                label="Kategori Permintaan"
-                value={form.category || ''}
-                onChange={e => handleChange('category', e.target.value)}
+                label="Tipe Permintaan"
+                value={form.type || ''}
+                onChange={e => handleChange('type', e.target.value)}
                 SelectProps={{ native: false }}
               >
-                {categoryOptions.map(option => (
+                {typeOptions.map(option => (
                   <MenuItem key={option} value={option}>
                     {option}
                   </MenuItem>
@@ -212,17 +218,23 @@ const RequestForm = ({ onSubmit, onCancel }: RequestFormProps) => {
               </TextField>
             </Grid>
             {/* Only show the rest of the form if a category is selected */}
-            {form.category && (
+            {form.type && (
               <>
-                {form.category === 'Instalasi / Uji Fungsi Alat' ? (
+                {form.type === 'Instalasi / Uji Fungsi Alat' ? (
                   <>
                     {textFields.map(({ field, label }) => (
                       <Grid item xs={12} sm={6} key={field}>
                         <TextField
                           fullWidth
                           label={label}
+                          type={field === 'noRevisi' ? 'number' : 'text'}
                           value={(form as any)[field]}
-                          onChange={e => handleChange(field, e.target.value)}
+                          onChange={e =>
+                            handleChange(
+                              field,
+                              field === 'noRevisi' ? Number(e.target.value) : e.target.value
+                            )
+                          }
                         />
                       </Grid>
                     ))}
