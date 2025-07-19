@@ -5,16 +5,12 @@ import {
   CardContent,
   Typography,
   Button,
-  Divider,
   Chip,
   Grid,
   Paper,
   IconButton,
   Stack,
   Avatar,
-  Badge,
-  LinearProgress,
-  Tooltip,
   Snackbar,
   Alert
 } from '@mui/material'
@@ -32,7 +28,6 @@ interface RequestFormDetailViewProps {
   onReject?: () => void
   onApprove?: () => void
   onBack?: () => void
-  onRefresh?: () => void
 }
 
 const RequestFormDetailView: React.FC<RequestFormDetailViewProps> = ({
@@ -40,8 +35,7 @@ const RequestFormDetailView: React.FC<RequestFormDetailViewProps> = ({
   isApproval = false,
   onReject,
   onApprove,
-  onBack,
-  onRefresh
+  onBack
 }) => {
   const { user } = useAuth()
   const router = useRouter()

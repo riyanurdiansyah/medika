@@ -13,7 +13,7 @@ import {
 } from '@mui/material'
 import Icon from 'src/@core/components/icon'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
-import dayjs, { Dayjs } from 'dayjs'
+import { Dayjs } from 'dayjs'
 
 interface FormItem {
   id: string

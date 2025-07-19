@@ -1,24 +1,23 @@
 import React, { useState, useEffect } from 'react'
 import {
-  Box,
   Card,
   CardContent,
+  CardHeader,
   TextField,
   Button,
   Typography,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Chip,
-  Alert,
+  Box,
   Switch,
   FormControlLabel,
   Grid,
   Divider,
-  IconButton,
-  Tooltip,
-  Autocomplete
+  Autocomplete,
+  Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Chip
 } from '@mui/material'
 import { Icon } from '@iconify/react'
 import fcmNotificationService, { FCMRequest, FCMNotification } from 'src/services/fcmNotificationService'
@@ -38,10 +37,7 @@ const FCMRequestForm: React.FC<FCMRequestFormProps> = ({ onSuccess, onError }) =
 
   // Form state
   const [targetType, setTargetType] = useState<'token' | 'topic' | 'multiple'>('token')
-  const [targetToken, setTargetToken] = useState('')
   const [targetTopic, setTargetTopic] = useState('')
-  const [targetTokens, setTargetTokens] = useState<string[]>([])
-  const [newToken, setNewToken] = useState('')
   
   // User selection state
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null)
@@ -85,7 +81,6 @@ const FCMRequestForm: React.FC<FCMRequestFormProps> = ({ onSuccess, onError }) =
           const token = await fcmNotificationService.getToken()
           if (token) {
             setCurrentToken(token)
-            setTargetToken(token)
           }
         }
       }

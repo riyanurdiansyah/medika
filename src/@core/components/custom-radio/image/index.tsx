@@ -3,6 +3,9 @@ import Box from '@mui/material/Box'
 import Grid from '@mui/material/Grid'
 import Radio from '@mui/material/Radio'
 
+// ** Next Import
+import Image from 'next/image'
+
 // ** Type Imports
 import { CustomRadioImgProps } from 'src/@core/components/custom-radio/types'
 
@@ -38,7 +41,17 @@ const CustomRadioImg = (props: CustomRadioImgProps) => {
             }
           }}
         >
-          {typeof img === 'string' ? <img src={img} alt={alt ?? `radio-image-${value}`} /> : img}
+          {typeof img === 'string' ? (
+            <Image 
+              src={img} 
+              alt={alt ?? `radio-image-${value}`}
+              width={100}
+              height={100}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : (
+            img
+          )}
           <Radio
             name={name}
             size='small'

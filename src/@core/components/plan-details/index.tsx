@@ -4,6 +4,9 @@ import { styled } from '@mui/material/styles'
 import Typography from '@mui/material/Typography'
 import Box, { BoxProps } from '@mui/material/Box'
 
+// ** Next Import
+import Image from 'next/image'
+
 // ** Icon Imports
 import Icon from 'src/@core/components/icon'
 
@@ -76,10 +79,10 @@ const PlanDetails = (props: PricingPlanProps) => {
         />
       ) : null}
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
-        <img
-          width={data?.imgWidth}
+        <Image
+          width={data?.imgWidth || 100}
           src={`${data?.imgSrc}`}
-          height={data?.imgHeight}
+          height={data?.imgHeight || 100}
           alt={`${data?.title.toLowerCase().replace(' ', '-')}-plan-img`}
         />
       </Box>

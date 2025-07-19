@@ -3,6 +3,9 @@ import Box from '@mui/material/Box'
 import Grid from '@mui/material/Grid'
 import Checkbox from '@mui/material/Checkbox'
 
+// ** Next Import
+import Image from 'next/image'
+
 // ** Type Imports
 import { CustomCheckboxImgProps } from 'src/@core/components/custom-checkbox/types'
 
@@ -43,7 +46,17 @@ const CustomCheckboxImg = (props: CustomCheckboxImgProps) => {
                 })
           }}
         >
-          {typeof img === 'string' ? <img src={img} alt={alt ?? `checkbox-image-${value}`} /> : img}
+          {typeof img === 'string' ? (
+            <Image 
+              src={img} 
+              alt={alt ?? `checkbox-image-${value}`}
+              width={100}
+              height={100}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : (
+            img
+          )}
           <Checkbox
             size='small'
             color={color}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { approvalChainService, ApprovalChain } from 'src/services/approvalChainService'
 import { UserData } from 'src/types/user'
 
@@ -8,7 +8,7 @@ export const useApprovalChain = (userId: string) => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchChain = async () => {
+  const fetchChain = useCallback(async () => {
     try {
       setLoading(true)
       const [chainData, nextApproverData] = await Promise.all([
@@ -23,13 +23,13 @@ export const useApprovalChain = (userId: string) => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [userId])
 
   useEffect(() => {
     if (userId) {
       fetchChain()
     }
-  }, [userId])
+  }, [userId, fetchChain])
 
   return { chain, nextApprover, loading, error, refreshChain: fetchChain }
 } 

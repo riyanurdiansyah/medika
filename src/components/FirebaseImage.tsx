@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { getFirebaseStorageURL, isFirebaseStorageURL, extractFirebaseStoragePath } from 'src/utils/firebase-helpers'
+import { getFirebaseStorageURL, isFirebaseStorageURL } from 'src/utils/firebase-helpers'
 
 interface FirebaseImageProps {
   src: string

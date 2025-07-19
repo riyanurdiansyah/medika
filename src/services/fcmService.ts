@@ -212,7 +212,7 @@ class FCMService {
       })
       return tokenRef.id
     }
-  },
+  }
 
   /**
    * Get device tokens for a user
@@ -230,7 +230,7 @@ class FCMService {
       createdAt: doc.data().createdAt?.toDate(),
       updatedAt: doc.data().updatedAt?.toDate()
     })) as FCMDeviceToken[]
-  },
+  }
 
   /**
    * Get all active device tokens
@@ -248,7 +248,7 @@ class FCMService {
       createdAt: doc.data().createdAt?.toDate(),
       updatedAt: doc.data().updatedAt?.toDate()
     })) as FCMDeviceToken[]
-  },
+  }
 
   /**
    * Deactivate device token
@@ -258,7 +258,7 @@ class FCMService {
       isActive: false,
       updatedAt: serverTimestamp()
     }, { merge: true })
-  },
+  }
 
   /**
    * Save message to Firestore for tracking
@@ -269,7 +269,7 @@ class FCMService {
       sentAt: serverTimestamp()
     })
     return messageRef.id
-  },
+  }
 
   /**
    * Update message status
@@ -280,7 +280,7 @@ class FCMService {
       errorMessage,
       updatedAt: serverTimestamp()
     }, { merge: true })
-  },
+  }
 
   /**
    * Get message history

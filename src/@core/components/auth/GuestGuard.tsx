@@ -27,7 +27,7 @@ const GuestGuard = (props: GuestGuardProps) => {
     if (userData) {
       router.replace('/')
     }
-  }, [router.isReady]) // Only depend on router.isReady
+  }, [router.isReady, router]) // Added router to dependency array
 
   if (auth.loading || (!auth.loading && auth.user !== null)) {
     return fallback

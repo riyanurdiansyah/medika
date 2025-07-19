@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from 'src/configs/firebase'
 import { ProductOffer } from 'src/types/productOffer'
@@ -10,7 +10,7 @@ export const useOffers = (userRole?: string) => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchOffers = async () => {
+  const fetchOffers = useCallback(async () => {
     try {
       setLoading(true)
       const offersCollection = collection(db, 'productOffers')
@@ -46,11 +46,11 @@ export const useOffers = (userRole?: string) => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user, userRole])
 
   useEffect(() => {
     fetchOffers()
-  }, [user, userRole])
+  }, [fetchOffers])
 
   return { offers, loading, error, refreshOffers: fetchOffers }
 } 

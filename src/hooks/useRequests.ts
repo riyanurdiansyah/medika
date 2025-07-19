@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { requestService } from 'src/services/requestService'
 import { Request } from 'src/types/request'
 import { RequestFormM } from 'src/types/requestForm'
@@ -12,7 +12,7 @@ export const useRequests = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     if (!user) {
       setError('You must be logged in to view requests')
       setLoading(false)
@@ -47,11 +47,11 @@ export const useRequests = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user])
 
   useEffect(() => {
     fetchRequests()
-  }, [user])
+  }, [fetchRequests])
 
   return { requests, loading, error, refreshRequests: fetchRequests }
 }
@@ -64,7 +64,7 @@ export const useRequestsByCreatedBy = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const getRequests = async () => {
+  const getRequests = useCallback(async () => {
     if (!user?.username) {
       setError('Username not found')
       setLoading(false)
@@ -89,11 +89,11 @@ export const useRequestsByCreatedBy = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user])
 
   useEffect(() => {
     getRequests()
-  }, [user])
+  }, [getRequests])
 
   return { requests, loading, error, refreshRequests: getRequests }
 } 

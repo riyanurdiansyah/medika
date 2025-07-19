@@ -1,5 +1,5 @@
 // ** React Imports
-import { createContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useEffect, useState, ReactNode, useCallback } from 'react'
 
 // ** Next Import
 import { useRouter } from 'next/router'
@@ -36,6 +36,19 @@ const AuthProvider = ({ children }: Props) => {
 
   // ** Hooks
   const router = useRouter()
+
+  const handleLogout = useCallback(async () => {
+    try {
+      await signOut(auth)
+      setUser(null)
+      window.localStorage.removeItem('userData')
+      router.push('/login')
+    } catch (error) {
+      console.error('Error signing out:', error)
+    } finally {
+      setLoading(false)
+    }
+  }, [router])
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -74,7 +87,7 @@ const AuthProvider = ({ children }: Props) => {
     })
 
     return () => unsubscribe()
-  }, []) // Remove router dependency
+  }, [router, handleLogout]) // Added missing dependencies
 
   const handleLogin = async (params: LoginParams, errorCallback?: ErrCallbackType) => {
     try {
@@ -114,19 +127,6 @@ const AuthProvider = ({ children }: Props) => {
       }
     } catch (err: any) {
       if (errorCallback) errorCallback(err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleLogout = async () => {
-    try {
-      await signOut(auth)
-      setUser(null)
-      window.localStorage.removeItem('userData')
-      router.push('/login')
-    } catch (error) {
-      console.error('Error signing out:', error)
     } finally {
       setLoading(false)
     }

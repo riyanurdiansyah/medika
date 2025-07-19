@@ -183,7 +183,6 @@ const RequestFormView = () => {
         onApprove={handleApprove}
         onReject={handleReject}
         onBack={handleBack}
-        onRefresh={handleRefresh}
       />
     </Box>
   )

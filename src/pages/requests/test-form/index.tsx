@@ -38,7 +38,6 @@ const TestFormPage = () => {
         <BasicInfoRequestForm
           onSubmit={handleSubmit}
           onNext={handleNext}
-          isEdit={false}
           loading={false}
         />
       </Paper>

@@ -5,13 +5,7 @@ import {
   Typography,
   Paper,
   LinearProgress,
-  Button,
-  Grid,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormHelperText
+  Button
 } from '@mui/material'
 import { format } from 'date-fns'
 import { RequestFormM } from 'src/types/requestForm'
@@ -20,7 +14,6 @@ interface BasicInfoRequestFormProps {
   data?: Partial<RequestFormM>
   onSubmit?: (data: Partial<RequestFormM>) => void
   onNext?: (data: Partial<RequestFormM>) => void
-  isEdit?: boolean
   loading?: boolean
 }
 
@@ -28,7 +21,6 @@ const BasicInfoRequestForm: React.FC<BasicInfoRequestFormProps> = ({
   data = {},
   onSubmit,
   onNext,
-  isEdit = false,
   loading = false
 }) => {
   const [formData, setFormData] = useState<Partial<RequestFormM>>({

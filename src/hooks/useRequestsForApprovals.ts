@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { requestService } from 'src/services/requestService'
 import { userService } from 'src/services/userService'
 import { RequestFormM } from 'src/types/requestForm'
@@ -12,7 +12,7 @@ export const useRequestsForApprovals = () => {
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     if (!user) {
       setRequests([])
       setLoading(false)
@@ -37,11 +37,11 @@ export const useRequestsForApprovals = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user])
 
   useEffect(() => {
     fetchRequests()
-  }, [user])
+  }, [fetchRequests])
 
   const refreshRequests = () => {
     fetchRequests()
